@@ -11,16 +11,20 @@
 void spacegame::move_and_bounce_vertex(vector2& v, vector2& v_m, float f)
 {
 	vector2 projected_point = v + (v_m * f);
-	if (abs(projected_point.x) > 1.0f)
-		v_m.x *= -1.0f;
-	if (abs(projected_point.y) > 1.0f)
-		v_m.y *= -1.0f;
+	if (projected_point.x > 1.0f)
+		v_m.x = -abs(v_m.x);
+	if (projected_point.x < -1.0f)
+		v_m.x = abs(v_m.x);
+	if (projected_point.y > 1.0f)
+		v_m.y = -abs(v_m.y);
+	if (projected_point.y < -1.0f)
+		v_m.y = abs(v_m.y);
 	v = projected_point;
 }
 
 inline float randf()
 {
-	return (((float)rand() / (float)INT_MAX) * 2.0f) - 1.0f;
+	return (((float)rand() / (float)RAND_MAX) * 2.0f) - 1.0f;
 }
 
 spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
@@ -37,6 +41,7 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 
 	glutInit(&argc, argv);
 	glutInitWindowSize(x, y);
+	glutInitWindowPosition(50, 50);
 	glutCreateWindow("GP");
 	glutDisplayFunc(glut_callback_handlers::display);
 	glutMainLoop();
