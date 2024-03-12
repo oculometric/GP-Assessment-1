@@ -17,6 +17,8 @@ private:
 
 	std::chrono::steady_clock::time_point last_frame_time;
 
+	static void move_and_bounce_vertex(vector2& v, vector2& v_m, float f);
+
 public:
 	spacegame(int argc, char* argv[], unsigned int x, unsigned int y);
 
