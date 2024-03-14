@@ -6,6 +6,9 @@
 #include "GL/freeglut.h"
 #include "glut_callback_handlers.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include <iostream>
 
 void spacegame::move_and_bounce_vertex(vector2& v, vector2& v_m, float f)
@@ -39,16 +42,66 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	v2_m = norm(vector2{ randf(), randf() });
 	v3_m = norm(vector2{ randf(), randf() });
 
+	m.vertices = new vector3[8];
+	m.vertices[0] = vector3{ 1,1,1 };
+	m.vertices[1] = vector3{ -1,1,1 };
+	m.vertices[2] = vector3{ -1,-1,1 };
+	m.vertices[3] = vector3{ 1,-1,1 };
+
+	m.vertices[4] = vector3{ 1,1,-1 };
+	m.vertices[5] = vector3{ -1,1,-1 };
+	m.vertices[6] = vector3{ -1,-1,-1 };
+	m.vertices[7] = vector3{ 1,-1,-1 };
+
+	m.triangles = new uint32_t[12*3]
+	{ 
+		0,1,2,
+		0,2,3,
+		0,3,4,
+		3,4,7,
+		1,0,5,
+		0,4,5,
+		2,1,6,
+		1,5,6,
+		3,2,6,
+		3,6,7,
+		4,7,6,
+		5,4,6
+	};
+
+	m.num_tris = 12 * 3;
+	m.num_verts = 8;
+
+
 	glutInit(&argc, argv);
 	glutInitWindowSize(x, y);
 	glutInitWindowPosition(50, 50);
 	glutCreateWindow("GP");
 	glutDisplayFunc(glut_callback_handlers::display);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glTranslatef(0, 0, 0.5);
+	glRotatef(55-90, 1, 0, 0);
+	glRotatef(45, 0, 0, 1);
+
+	glEnable(GL_DEPTH);
+	glDepthFunc(GL_LESS);
+
 	glutMainLoop();
 }
 
 void spacegame::display()
 {
+	
+	auto time_now = std::chrono::high_resolution_clock::now();
+	float delta_time = std::chrono::duration_cast<std::chrono::nanoseconds>(time_now - last_frame_time).count() / 1000000000.0f;
+	last_frame_time = time_now;
+	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	/*
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBegin(GL_POLYGON);
 	{
@@ -63,9 +116,6 @@ void spacegame::display()
 	glFlush();
 
 	// move vertices
-	auto time_now = std::chrono::high_resolution_clock::now();
-	float delta_time = std::chrono::duration_cast<std::chrono::nanoseconds>(time_now - last_frame_time).count() / 1000000000.0f;
-	last_frame_time = time_now;
 	v1 += v1_m * delta_time;
 	v2 += v2_m * delta_time;
 	v3 += v3_m * delta_time;
@@ -73,9 +123,34 @@ void spacegame::display()
 	move_and_bounce_vertex(v1, v1_m, delta_time);
 	move_and_bounce_vertex(v2, v2_m, delta_time);
 	move_and_bounce_vertex(v3, v3_m, delta_time);
+	*/
+	
 
+	glLineWidth(5);
+	
+	glRotatef(0.1, 0, 0, 1);
+	draw_mesh();
+
+	glEnd();
+	glFlush();
 
 	glutPostRedisplay();
+}
+
+void spacegame::draw_mesh()
+{
+	if (m.triangles == NULL || m.vertices == NULL) return;
+
+	glBegin(GL_TRIANGLES);
+
+	for (uint32_t i = 0; i < m.num_tris; i++)
+	{
+		vector3 vert = m.vertices[m.triangles[i]] * 0.5f;
+		glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
+		glVertex3f(vert.x, vert.y, vert.z);
+
+	}
+	glEnd();
 }
 
 

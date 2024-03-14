@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "vector2.h"
+#include "mesh.h"
 
 class spacegame
 {
@@ -22,7 +23,12 @@ private:
 public:
 	spacegame(int argc, char* argv[], unsigned int x, unsigned int y);
 
+	int num_edges = 5;
+	mesh m;
+
 	void display();
+
+	void draw_mesh();
 
 	spacegame() = delete;
 
