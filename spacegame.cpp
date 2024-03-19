@@ -82,11 +82,17 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glLoadIdentity();
 
 	glTranslatef(0, 0, -0.5);
-	glRotatef(35-90, 1, 0, 0);
-	glRotatef(45, 0, 0, 1);
+	//glRotatef(-35+90, 1, 0, 0);
+	//glRotatef(45, 0, 0, 1);
+
+	// -z into screen, ghmm
+	//glPushMatrix();
+
+	//gluPerspective(120, 1, 0.01, 10);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
