@@ -42,38 +42,34 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	v2_m = norm(vector2{ randf(), randf() });
 	v3_m = norm(vector2{ randf(), randf() });
 
-	m.vertices = new vector3[8];
-	m.vertices[0] = vector3{ 1,1,1 };
-	m.vertices[1] = vector3{ -1,1,1 };
-	m.vertices[2] = vector3{ -1,-1,1 };
-	m.vertices[3] = vector3{ 1,-1,1 };
+	m = new mesh(8, 12);
 
-	m.vertices[4] = vector3{ 1,1,-1 };
-	m.vertices[5] = vector3{ -1,1,-1 };
-	m.vertices[6] = vector3{ -1,-1,-1 };
-	m.vertices[7] = vector3{ 1,-1,-1 };
+	m->vertices[0] = vector3{ 1,1,1 };
+	m->vertices[1] = vector3{ -1,1,1 };
+	m->vertices[2] = vector3{ -1,-1,1 };
+	m->vertices[3] = vector3{ 1,-1,1 };
 
-	m.triangles = new uint32_t[12*3]
-	{ 
-		0,1,2,
-		0,2,3,
-		0,3,4,
-		3,4,7,
-		1,0,5,
-		0,4,5,
-		2,1,6,
-		1,5,6,
-		3,2,6,
-		3,6,7,
-		4,7,6,
-		5,4,6
-	};
+	m->vertices[4] = vector3{ 1,1,-1 };
+	m->vertices[5] = vector3{ -1,1,-1 };
+	m->vertices[6] = vector3{ -1,-1,-1 };
+	m->vertices[7] = vector3{ 1,-1,-1 };
 
-	m.num_tris = 12 * 3;
-	m.num_verts = 8;
+	m->triangles[0] = 0; m->triangles[1] = 1; m->triangles[2] = 2;
+	m->triangles[3] = 0; m->triangles[4] = 2; m->triangles[5] = 3;
+	m->triangles[6] = 0; m->triangles[7] = 3; m->triangles[8] = 4;
+	m->triangles[9] = 7; m->triangles[10] = 4; m->triangles[11] = 3;
+	m->triangles[12] = 1; m->triangles[13] = 0; m->triangles[14] = 5;
+	m->triangles[15] = 0; m->triangles[16] = 4; m->triangles[17] = 5;
+	m->triangles[18] = 2; m->triangles[19] = 1; m->triangles[20] = 6;
+	m->triangles[21] = 1; m->triangles[22] = 5; m->triangles[23] = 6;
+	m->triangles[24] = 3; m->triangles[25] = 2; m->triangles[26] = 6;
+	m->triangles[27] = 3; m->triangles[28] = 6; m->triangles[29] = 7;
+	m->triangles[30] = 4; m->triangles[31] = 7; m->triangles[32] = 6;
+	m->triangles[33] = 5; m->triangles[34] = 4; m->triangles[35] = 6;
 
 
 	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(x, y);
 	glutInitWindowPosition(50, 50);
 	glutCreateWindow("GP");
@@ -85,13 +81,16 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glTranslatef(0, 0, 0.5);
+	glTranslatef(0, 0, -0.5);
 	glRotatef(35-90, 1, 0, 0);
 	glRotatef(45, 0, 0, 1);
 
-	glEnable(GL_DEPTH);
+	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glEnable(GL_3D);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	glFrontFace(GL_CW);
 
 	glutMainLoop();
 }
@@ -104,31 +103,6 @@ void spacegame::display()
 	last_frame_time = time_now;
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	/*
-	glBegin(GL_POLYGON);
-	{
-		glColor3f(1, 0, 0);
-		glVertex2f(v1.x, v1.y);
-		glColor3f(0, 1, 0);
-		glVertex2f(v2.x, v2.y);
-		glColor3f(0, 0, 1);
-		glVertex2f(v3.x, v3.y);
-	}
-	glEnd();
-
-	// move vertices
-	v1 += v1_m * delta_time;
-	v2 += v2_m * delta_time;
-	v3 += v3_m * delta_time;
-
-	move_and_bounce_vertex(v1, v1_m, delta_time);
-	move_and_bounce_vertex(v2, v2_m, delta_time);
-	move_and_bounce_vertex(v3, v3_m, delta_time);
-	*/
-	
-
-	glLineWidth(5);
 	
 	draw_mesh();
 
@@ -162,18 +136,18 @@ void spacegame::mouse_click(int button, int state, int x, int y)
 
 void spacegame::draw_mesh()
 {
-	if (m.triangles == NULL || m.vertices == NULL) return;
+	if (m->triangles == NULL || m->vertices == NULL) return;
 
-	
+	glPolygonMode(GL_BACK, GL_LINE);
 
-	for (uint32_t i = 0; i < m.num_tris; i++)
+	glBegin(GL_TRIANGLES);
+	for (uint32_t i = 0; i < m->tris_count(); i++)
 	{
-		if (i % 3 == 0) glBegin(GL_POLYGON);
-		vector3 vert = m.vertices[m.triangles[i]] * 0.5f;
+		vector3 vert = m->vertices[m->triangles[i]] * 0.5f;
 		glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
 		glVertex3f(vert.x * 0.5f, vert.y * 0.5f, vert.z * 0.5f);
-		if (i % 3 == 2) glEnd();
 	}
+	glEnd();
 }
 
 

@@ -26,7 +26,7 @@ public:
 	spacegame(int argc, char* argv[], unsigned int x, unsigned int y);
 
 	int num_edges = 5;
-	mesh m;
+	mesh* m;
 
 	void display();
 	void mouse_move(int x, int y);

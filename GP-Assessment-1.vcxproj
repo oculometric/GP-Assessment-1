@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="glut_callback_handlers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mesh.cpp" />
     <ClCompile Include="spacegame.cpp" />
   </ItemGroup>
   <ItemGroup>
