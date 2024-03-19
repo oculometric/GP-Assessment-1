@@ -4,6 +4,20 @@
 #include <string>
 #include <exception>
 
+struct face_corner_info { uint32_t vert; uint32_t uv; uint32_t vn; };
+
+face_corner_info split_face_corner(std::string str)
+{
+    face_corner_info fci;
+    size_t first_break_ind = str.find('/');
+    fci.vert = stoi(str.substr(first_break_ind)) - 1;
+    size_t second_break_ind = str.find('/', first_break_ind + 1);
+    fci.uv = stoi(str.substr(first_break_ind + 1, second_break_ind - first_break_ind));
+    fci.vn = stoi(str.substr(second_break_ind + 1, str.find('/', second_break_ind+1) - second_break_ind));
+
+    return fci;
+}
+
 uint32_t mesh::verts_count()
 {
     return num_verts;
@@ -71,7 +85,7 @@ mesh::mesh(std::string path)
     vector2* uvs_temp = new vector2[found_uvs];
     vector3* vns_temp = new vector3[found_vnorms];
     
-    // process the file
+    // process the file, excluding triangles
     file.clear();
     file.seekg(0, std::ios::beg);
 
@@ -95,10 +109,6 @@ mesh::mesh(std::string path)
             vertices[v_ind] = tmp3;
             v_ind++;
         }
-        else if (type == "f")
-        {
-            // tri TODO
-        }
         else if (type == "vn")
         {
             // read vertex normal
@@ -118,7 +128,56 @@ mesh::mesh(std::string path)
         }
         // skip to next line
         file.ignore('\n');
+        if (file.eof()) break;
     }
+
+    // iterate the file again, processing triangles now. TODO: support non-tri faces
+    std::string v_inds;
+    face_corner_info fci;
+
+    while (true)
+    {
+        file >> type;
+        if (type == "f")
+        {
+            // read triangle
+            
+            // first vert
+            file >> v_inds;
+            fci = split_face_corner(v_inds);
+
+            triangles[f_ind] = fci.vert;
+            uvs[f_ind] = uvs_temp[fci.uv];
+            vertex_normals[f_ind] = vns_temp[fci.vn];
+            f_ind++;
+
+            // second vert
+            file >> v_inds;
+            fci = split_face_corner(v_inds);
+
+            triangles[f_ind] = fci.vert;
+            uvs[f_ind] = uvs_temp[fci.uv];
+            vertex_normals[f_ind] = vns_temp[fci.vn];
+            f_ind++;
+
+            // third vert
+            file >> v_inds;
+            fci = split_face_corner(v_inds);
+
+            triangles[f_ind] = fci.vert;
+            uvs[f_ind] = uvs_temp[fci.uv];
+            vertex_normals[f_ind] = vns_temp[fci.vn];
+            f_ind++;
+        }
+        file.ignore('\n');
+        if (file.eof()) break;
+    }
+
+    // clean up
+    file.close();
+
+    delete[] uvs_temp;
+    delete[] vns_temp;
 }
 
 mesh::~mesh()

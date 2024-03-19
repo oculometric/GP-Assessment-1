@@ -42,7 +42,7 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	v2_m = norm(vector2{ randf(), randf() });
 	v3_m = norm(vector2{ randf(), randf() });
 
-	m = new mesh(8, 12);
+	/*m = new mesh(8, 12);
 
 	m->vertices[0] = vector3{ 1,1,1 };
 	m->vertices[1] = vector3{ -1,1,1 };
@@ -65,7 +65,9 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	m->triangles[24] = 3; m->triangles[25] = 2; m->triangles[26] = 6;
 	m->triangles[27] = 3; m->triangles[28] = 6; m->triangles[29] = 7;
 	m->triangles[30] = 4; m->triangles[31] = 7; m->triangles[32] = 6;
-	m->triangles[33] = 5; m->triangles[34] = 4; m->triangles[35] = 6;
+	m->triangles[33] = 5; m->triangles[34] = 4; m->triangles[35] = 6;*/
+
+	m = new mesh("teapot.obj");
 
 
 	glutInit(&argc, argv);
