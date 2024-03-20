@@ -23,4 +23,6 @@ namespace glut_callback_handlers
 
 	void key_up(uint8_t key, int x, int y) { if (game_global) game_global->key_up(key, x, y); }
 
+	void frame_refresh(int value) { if (game_global) game_global->frame_refresh(value); }
+
 }

@@ -56,6 +56,7 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glutKeyboardFunc(glut_callback_handlers::key_down);
 	glutKeyboardUpFunc(glut_callback_handlers::key_up);
 	glutIgnoreKeyRepeat(1);
+	glutTimerFunc(1000 / 60, glut_callback_handlers::frame_refresh, 1000 / 60);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -124,7 +125,6 @@ void spacegame::display()
 
 	glFlush();
 
-	glutPostRedisplay();
 }
 
 void spacegame::mouse_move(int x, int y)
@@ -164,6 +164,12 @@ void spacegame::key_up(uint8_t key, int x, int y)
 	if (key == 's') camera_local_velocity.z -= 1.0f;
 	if (key == 'a') camera_local_velocity.x -= -1.0f;
 	if (key == 'd') camera_local_velocity.x -= 1.0f;
+}
+
+void spacegame::frame_refresh(int value)
+{
+	glutPostRedisplay();
+	glutTimerFunc(value, glut_callback_handlers::frame_refresh, value);
 }
 
 void spacegame::draw_mesh()

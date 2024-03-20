@@ -18,4 +18,6 @@ namespace glut_callback_handlers
 	
 	void key_down(uint8_t key, int x, int y);
 	void key_up(uint8_t key, int x, int y);
+
+	void frame_refresh(int value);
 }
