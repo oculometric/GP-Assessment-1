@@ -42,33 +42,7 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	v2_m = norm(vector2{ randf(), randf() });
 	v3_m = norm(vector2{ randf(), randf() });
 
-	/*m = new mesh(8, 12);
-
-	m->vertices[0] = vector3{ 1,1,1 };
-	m->vertices[1] = vector3{ -1,1,1 };
-	m->vertices[2] = vector3{ -1,-1,1 };
-	m->vertices[3] = vector3{ 1,-1,1 };
-
-	m->vertices[4] = vector3{ 1,1,-1 };
-	m->vertices[5] = vector3{ -1,1,-1 };
-	m->vertices[6] = vector3{ -1,-1,-1 };
-	m->vertices[7] = vector3{ 1,-1,-1 };
-
-	m->triangles[0] = 0; m->triangles[1] = 1; m->triangles[2] = 2;
-	m->triangles[3] = 0; m->triangles[4] = 2; m->triangles[5] = 3;
-	m->triangles[6] = 0; m->triangles[7] = 3; m->triangles[8] = 4;
-	m->triangles[9] = 7; m->triangles[10] = 4; m->triangles[11] = 3;
-	m->triangles[12] = 1; m->triangles[13] = 0; m->triangles[14] = 5;
-	m->triangles[15] = 0; m->triangles[16] = 4; m->triangles[17] = 5;
-	m->triangles[18] = 2; m->triangles[19] = 1; m->triangles[20] = 6;
-	m->triangles[21] = 1; m->triangles[22] = 5; m->triangles[23] = 6;
-	m->triangles[24] = 3; m->triangles[25] = 2; m->triangles[26] = 6;
-	m->triangles[27] = 3; m->triangles[28] = 6; m->triangles[29] = 7;
-	m->triangles[30] = 4; m->triangles[31] = 7; m->triangles[32] = 6;
-	m->triangles[33] = 5; m->triangles[34] = 4; m->triangles[35] = 6;*/
-
 	m = new mesh("teapot.obj");
-
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH);
@@ -79,18 +53,9 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glutMotionFunc(glut_callback_handlers::mouse_move);
 	glutPassiveMotionFunc(glut_callback_handlers::mouse_move_passive);
 	glutMouseFunc(glut_callback_handlers::mouse_click);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glTranslatef(0, 0, -0.5);
-	//glRotatef(-35+90, 1, 0, 0);
-	//glRotatef(45, 0, 0, 1);
-
-	// -z into screen, ghmm
-	//glPushMatrix();
-
-	//gluPerspective(120, 1, 0.01, 10);
+	glutKeyboardFunc(glut_callback_handlers::key_down);
+	glutKeyboardUpFunc(glut_callback_handlers::key_up);
+	glutIgnoreKeyRepeat(1);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -98,7 +63,10 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	glFrontFace(GL_CW);
+	glFrontFace(GL_CCW);
+
+	camera_position.z = 2.0f;
+	camera_rotation = vector3{ 0, 0, 0 };
 
 	glutMainLoop();
 }
@@ -111,8 +79,48 @@ void spacegame::display()
 	last_frame_time = time_now;
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// TODO: transform camera_local_velocity by the camera_rotation
+	camera_position += camera_local_velocity * 0.5 * delta_time;
 	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRotatef(camera_rotation.y, 0, 1, 0);
+	glRotatef(camera_rotation.x, 1, 0, 0);
+	glRotatef(camera_rotation.z, 0, 0, 1);
+	glTranslatef(-camera_position.x, -camera_position.x, -camera_position.z);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(90, 1, 0.1, 10);
+
 	draw_mesh();
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef(-0.8, 0.8, -0.8);
+	glRotatef(camera_rotation.y, 0, 1, 0);
+	glRotatef(camera_rotation.x, 1, 0, 0);
+	glRotatef(camera_rotation.z, 0, 0, 1);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glBegin(GL_LINES);
+	{
+		glColor3f(1, 0, 0);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0.2, 0, 0);
+
+		glColor3f(0, 1, 0);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0.2, 0);
+
+		glColor3f(0, 0, 1);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0, 0.2);
+	}
+	glEnd();
 
 	glFlush();
 
@@ -122,10 +130,10 @@ void spacegame::display()
 void spacegame::mouse_move(int x, int y)
 {
 	int diff_x = x - last_mouse_x;
-	int diff_y = y - last_mouse_y;
-	
-	glRotatef(diff_x * 0.5, 0, 0, 1);
-	glRotatef(diff_y * 0.5, 1, 0, 0);
+	int diff_y = y - last_mouse_y;	
+
+	camera_rotation.x += diff_y * 0.5f;
+	camera_rotation.z += diff_x * 0.5f;
 
 	last_mouse_x = x;
 	last_mouse_y = y;
@@ -140,6 +148,22 @@ void spacegame::mouse_move_passive(int x, int y)
 void spacegame::mouse_click(int button, int state, int x, int y)
 {
 	std::cout << "button " << button << (state ? " up" : " down") << std::endl;
+}
+
+void spacegame::key_down(uint8_t key, int x, int y)
+{
+	if (key == 'w') camera_local_velocity.z += -1.0f;
+	if (key == 's') camera_local_velocity.z += 1.0f;
+	if (key == 'a') camera_local_velocity.x += -1.0f;
+	if (key == 'd') camera_local_velocity.x += 1.0f;
+}
+
+void spacegame::key_up(uint8_t key, int x, int y)
+{
+	if (key == 'w') camera_local_velocity.z -= -1.0f;
+	if (key == 's') camera_local_velocity.z -= 1.0f;
+	if (key == 'a') camera_local_velocity.x -= -1.0f;
+	if (key == 'd') camera_local_velocity.x -= 1.0f;
 }
 
 void spacegame::draw_mesh()

@@ -16,6 +16,10 @@ private:
 	vector2 v2_m;
 	vector2 v3_m;
 
+	vector3 camera_rotation;
+	vector3 camera_position;
+	vector3 camera_local_velocity;
+
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;
 	std::chrono::steady_clock::time_point last_frame_time;
@@ -32,6 +36,8 @@ public:
 	void mouse_move(int x, int y);
 	void mouse_move_passive(int x, int y);
 	void mouse_click(int button, int state, int x, int y);
+	void key_down(uint8_t key, int x, int y);
+	void key_up(uint8_t key, int x, int y);
 
 	void draw_mesh();
 

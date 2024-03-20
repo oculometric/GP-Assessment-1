@@ -18,4 +18,9 @@ namespace glut_callback_handlers
 	void mouse_move_passive(int x, int y) { if (game_global) game_global->mouse_move_passive(x, y); }
 
 	void mouse_click(int button, int state, int x, int y) { if (game_global) game_global->mouse_click(button, state, x, y); }
+
+	void key_down(uint8_t key, int x, int y) { if (game_global) game_global->key_down(key, x, y); }
+
+	void key_up(uint8_t key, int x, int y) { if (game_global) game_global->key_up(key, x, y); }
+
 }
