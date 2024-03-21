@@ -5,6 +5,7 @@
 #include <gl/GLU.h>
 #include "GL/freeglut.h"
 #include "glut_callback_handlers.h"
+#include "matrix3.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -81,15 +82,29 @@ void spacegame::display()
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// TODO: transform camera_local_velocity by the camera_rotation
-	camera_position += camera_local_velocity * 0.5 * delta_time;
+	vector3 angle = (camera_rotation * M_PI) / 180.0f;
+	matrix3 rot_x = { 1,  0,             0,
+					  0,  cos(angle.x), -sin(angle.x),
+					  0,  sin(angle.x),  cos(angle.x)   };
+
+	matrix3 rot_y = { cos(angle.y),  0,  sin(angle.y),
+					  0,             -1,  0,
+					 -sin(angle.y),  0,  cos(angle.y)   };
+
+	matrix3 rot_z = { cos(angle.z), -sin(angle.z),  0,
+					  sin(angle.z),  cos(angle.z),  0,
+					  0,             0,             1  };
+
+	// apply y, x, z rotations
+	vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
+	camera_position += camera_global_velocity * vector3{ 1,-1,1 } * 0.5 * delta_time;
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glRotatef(camera_rotation.y, 0, 1, 0);
-	glRotatef(camera_rotation.x, 1, 0, 0);
-	glRotatef(camera_rotation.z, 0, 0, 1);
-	glTranslatef(-camera_position.x, -camera_position.x, -camera_position.z);
+	glRotatef(camera_rotation.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(camera_rotation.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(camera_rotation.z, 0.0f, 0.0f, 1.0f);
+	glTranslatef(-camera_position.x, -camera_position.y, -camera_position.z);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -99,10 +114,10 @@ void spacegame::display()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(-0.8, 0.8, -0.8);
-	glRotatef(camera_rotation.y, 0, 1, 0);
-	glRotatef(camera_rotation.x, 1, 0, 0);
-	glRotatef(camera_rotation.z, 0, 0, 1);
+	glTranslatef(-0.8f, 0.8f, -0.8);
+	glRotatef(camera_rotation.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(camera_rotation.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(camera_rotation.z, 0.0f, 0.0f, 1.0f);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -156,6 +171,8 @@ void spacegame::key_down(uint8_t key, int x, int y)
 	if (key == 's') camera_local_velocity.z += 1.0f;
 	if (key == 'a') camera_local_velocity.x += -1.0f;
 	if (key == 'd') camera_local_velocity.x += 1.0f;
+	if (key == 'q') camera_local_velocity.y += -1.0f;
+	if (key == 'e') camera_local_velocity.y += 1.0f;
 }
 
 void spacegame::key_up(uint8_t key, int x, int y)
@@ -164,6 +181,8 @@ void spacegame::key_up(uint8_t key, int x, int y)
 	if (key == 's') camera_local_velocity.z -= 1.0f;
 	if (key == 'a') camera_local_velocity.x -= -1.0f;
 	if (key == 'd') camera_local_velocity.x -= 1.0f;
+	if (key == 'q') camera_local_velocity.y -= -1.0f;
+	if (key == 'e') camera_local_velocity.y -= 1.0f;
 }
 
 void spacegame::frame_refresh(int value)

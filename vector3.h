@@ -23,6 +23,7 @@ inline vector3 operator*(const vector3& a, const float f) { return vector3{ a.x 
 inline vector3 operator/(const vector3& a, const float f) { return vector3{ a.x / f, a.y / f, a.z / f }; }
 
 inline float operator^(const vector3& a, const vector3& b) { return (a.x * b.x) + (a.y * b.y) + (a.z * b.z); }
+inline vector3 operator%(const vector3& a, const vector3& b) { return vector3{ (a.y* b.z) - (a.z * b.y), (a.z* b.x) - (a.x * b.z), (a.x* b.y) - (a.y * b.x) }; }
 
 inline float sq_mag(const vector3& a) { return a ^ a; }
 inline float mag(const vector3& a) { return sqrt(sq_mag(a)); }

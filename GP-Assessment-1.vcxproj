@@ -134,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glut_callback_handlers.h" />
+    <ClInclude Include="matrix3.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="spacegame.h" />
     <ClInclude Include="vector2.h" />
