@@ -12,9 +12,9 @@
 
 #include <iostream>
 
-void spacegame::move_and_bounce_vertex(vector2& v, vector2& v_m, float f)
+void SpaceGame::moveAndBounceVertex(Vector2& v, Vector2& v_m, float f)
 {
-	vector2 projected_point = v + (v_m * f);
+	Vector2 projected_point = v + (v_m * f);
 	if (projected_point.x > 1.0f)
 		v_m.x = -abs(v_m.x);
 	if (projected_point.x < -1.0f)
@@ -31,7 +31,7 @@ inline float randf()
 	return (((float)rand() / (float)RAND_MAX) * 2.0f) - 1.0f;
 }
 
-spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
+SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 {
 	glut_callback_handlers::init(this);
 
@@ -39,11 +39,11 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 
 	srand(last_frame_time.time_since_epoch().count());
 
-	v1_m = norm(vector2{ randf(), randf() });
-	v2_m = norm(vector2{ randf(), randf() });
-	v3_m = norm(vector2{ randf(), randf() });
+	v1_m = norm(Vector2{ randf(), randf() });
+	v2_m = norm(Vector2{ randf(), randf() });
+	v3_m = norm(Vector2{ randf(), randf() });
 
-	m = new mesh("teapot.obj");
+	m = new Mesh("teapot.obj");
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH);
@@ -51,13 +51,13 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glutInitWindowPosition(50, 50);
 	glutCreateWindow("GP");
 	glutDisplayFunc(glut_callback_handlers::display);
-	glutMotionFunc(glut_callback_handlers::mouse_move);
-	glutPassiveMotionFunc(glut_callback_handlers::mouse_move_passive);
-	glutMouseFunc(glut_callback_handlers::mouse_click);
-	glutKeyboardFunc(glut_callback_handlers::key_down);
-	glutKeyboardUpFunc(glut_callback_handlers::key_up);
+	glutMotionFunc(glut_callback_handlers::mouseMove);
+	glutPassiveMotionFunc(glut_callback_handlers::mouseMovePassive);
+	glutMouseFunc(glut_callback_handlers::mouseClick);
+	glutKeyboardFunc(glut_callback_handlers::keyDown);
+	glutKeyboardUpFunc(glut_callback_handlers::keyUp);
 	glutIgnoreKeyRepeat(1);
-	glutTimerFunc(1000 / 60, glut_callback_handlers::frame_refresh, 1000 / 60);
+	glutTimerFunc(1000 / 60, glut_callback_handlers::frameRefresh, 1000 / 60);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -68,12 +68,12 @@ spacegame::spacegame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glFrontFace(GL_CCW);
 
 	camera_position.z = 2.0f;
-	camera_rotation = vector3{ 0, 0, 0 };
+	camera_rotation = Vector3{ 0, 0, 0 };
 
 	glutMainLoop();
 }
 
-void spacegame::display()
+void SpaceGame::display()
 {
 	
 	auto time_now = std::chrono::high_resolution_clock::now();
@@ -82,22 +82,22 @@ void spacegame::display()
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	vector3 angle = (camera_rotation * M_PI) / 180.0f;
-	matrix3 rot_x = { 1,  0,             0,
+	Vector3 angle = (camera_rotation * M_PI) / 180.0f;
+	Matrix3 rot_x = { 1,  0,             0,
 					  0,  cos(angle.x), -sin(angle.x),
 					  0,  sin(angle.x),  cos(angle.x)   };
 
-	matrix3 rot_y = { cos(angle.y),  0,  sin(angle.y),
+	Matrix3 rot_y = { cos(angle.y),  0,  sin(angle.y),
 					  0,             -1,  0,
 					 -sin(angle.y),  0,  cos(angle.y)   };
 
-	matrix3 rot_z = { cos(angle.z), -sin(angle.z),  0,
+	Matrix3 rot_z = { cos(angle.z), -sin(angle.z),  0,
 					  sin(angle.z),  cos(angle.z),  0,
 					  0,             0,             1  };
 
 	// apply y, x, z rotations
-	vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
-	camera_position += camera_global_velocity * vector3{ 1,-1,1 } * 0.5 * delta_time;
+	Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
+	camera_position += camera_global_velocity * Vector3{ 1,-1,1 } * 0.5 * delta_time;
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -110,7 +110,7 @@ void spacegame::display()
 	glLoadIdentity();
 	gluPerspective(90, 1, 0.1, 10);
 
-	draw_mesh();
+	drawMesh();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -142,7 +142,7 @@ void spacegame::display()
 
 }
 
-void spacegame::mouse_move(int x, int y)
+void SpaceGame::mouseMove(int x, int y)
 {
 	int diff_x = x - last_mouse_x;
 	int diff_y = y - last_mouse_y;	
@@ -154,18 +154,18 @@ void spacegame::mouse_move(int x, int y)
 	last_mouse_y = y;
 }
 
-void spacegame::mouse_move_passive(int x, int y)
+void SpaceGame::mouseMovePassive(int x, int y)
 {
 	last_mouse_x = x;
 	last_mouse_y = y;
 }
 
-void spacegame::mouse_click(int button, int state, int x, int y)
+void SpaceGame::mouseClick(int button, int state, int x, int y)
 {
 	std::cout << "button " << button << (state ? " up" : " down") << std::endl;
 }
 
-void spacegame::key_down(uint8_t key, int x, int y)
+void SpaceGame::keyDown(uint8_t key, int x, int y)
 {
 	if (key == 'w') camera_local_velocity.z += -1.0f;
 	if (key == 's') camera_local_velocity.z += 1.0f;
@@ -175,7 +175,7 @@ void spacegame::key_down(uint8_t key, int x, int y)
 	if (key == 'e') camera_local_velocity.y += 1.0f;
 }
 
-void spacegame::key_up(uint8_t key, int x, int y)
+void SpaceGame::keyUp(uint8_t key, int x, int y)
 {
 	if (key == 'w') camera_local_velocity.z -= -1.0f;
 	if (key == 's') camera_local_velocity.z -= 1.0f;
@@ -185,22 +185,22 @@ void spacegame::key_up(uint8_t key, int x, int y)
 	if (key == 'e') camera_local_velocity.y -= 1.0f;
 }
 
-void spacegame::frame_refresh(int value)
+void SpaceGame::frameRefresh(int value)
 {
 	glutPostRedisplay();
-	glutTimerFunc(value, glut_callback_handlers::frame_refresh, value);
+	glutTimerFunc(value, glut_callback_handlers::frameRefresh, value);
 }
 
-void spacegame::draw_mesh()
+void SpaceGame::drawMesh()
 {
 	if (m->triangles == NULL || m->vertices == NULL) return;
 
 	glPolygonMode(GL_BACK, GL_LINE);
 
 	glBegin(GL_TRIANGLES);
-	for (uint32_t i = 0; i < m->tris_count(); i++)
+	for (uint32_t i = 0; i < m->trisCount(); i++)
 	{
-		vector3 vert = m->vertices[m->triangles[i]] * 0.5f;
+		Vector3 vert = m->vertices[m->triangles[i]] * 0.5f;
 		glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
 		glVertex3f(vert.x * 0.5f, vert.y * 0.5f, vert.z * 0.5f);
 	}
@@ -208,5 +208,5 @@ void spacegame::draw_mesh()
 }
 
 
-spacegame::~spacegame()
+SpaceGame::~SpaceGame()
 { }

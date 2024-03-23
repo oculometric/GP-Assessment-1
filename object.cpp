@@ -1,6 +1,6 @@
 #include "object.h"
 
-void object::add_child(object* obj, bool keep_world_transform)
+void Object::addChild(Object* obj, bool keep_world_transform)
 {
 	// if the child already has a parent, abort
 	if (obj->parent != NULL) return;
@@ -13,7 +13,7 @@ void object::add_child(object* obj, bool keep_world_transform)
 	// TODO: apply inverse transform of this to child transform to compensate for new relationship
 }
 
-object::object(mesh* geom, vector3 position, vector3 rotation, vector3 scale)
+Object::Object(Mesh* geom, Vector3 position, Vector3 rotation, Vector3 scale)
 {
 	geometry = geom;
 	parent = NULL;

@@ -4,24 +4,24 @@
 #include "mesh.h"
 #include <vector>
 
-class object
+class Object
 {
 public:
 	// TODO: improve this by caching the matrix (requires matrix4)
-	vector3 local_position;
-	vector3 local_rotation;
-	vector3 local_scale;
+	Vector3 local_position;
+	Vector3 local_rotation;
+	Vector3 local_scale;
 
-	mesh* geometry;
+	Mesh* geometry;
 
-	std::vector<object*> children;
-	object* parent;
+	std::vector<Object*> children;
+	Object* parent;
 
-	void generate_matrix();
-	void add_child(object* obj, bool keep_world_transform);
-	void remove_from_parent(bool keep_world_transform);
+	void generateMatrix();
+	void addChild(Object* obj, bool keep_world_transform);
+	void removeFromParent(bool keep_world_transform);
 
-	object(mesh* geom = NULL, vector3 position = { 0,0,0 }, vector3 rotation = { 0,0,0 }, vector3 scale = {1,1,1});
+	Object(Mesh* geom = NULL, Vector3 position = { 0,0,0 }, Vector3 rotation = { 0,0,0 }, Vector3 scale = {1,1,1});
 
 	// TODO: different object types
 };
