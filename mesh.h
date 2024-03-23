@@ -9,7 +9,7 @@ class Mesh
 public:
 	Vector3* vertices;			// one per vertex
 	uint32_t* triangles;		// three per triangle
-	vector2* uvs;				// three per triangle
+	Vector2* uvs;				// three per triangle
 	Vector3* vertex_normals;	// three per triangle
 
 private:

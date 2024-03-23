@@ -4,6 +4,13 @@
 #include "mesh.h"
 #include <vector>
 
+enum ObjectType
+{
+	MESH,
+	CAMERA,
+	EMPTY
+};
+
 class Object
 {
 public:
@@ -12,16 +19,19 @@ public:
 	Vector3 local_rotation;
 	Vector3 local_scale;
 
-	Mesh* geometry;
-
 	std::vector<Object*> children;
 	Object* parent;
+
+	Mesh* geometry;
+	ObjectType object_type;
+
+	std::string name = "object";
 
 	void generateMatrix();
 	void addChild(Object* obj, bool keep_world_transform);
 	void removeFromParent(bool keep_world_transform);
 
-	Object(Mesh* geom = NULL, Vector3 position = { 0,0,0 }, Vector3 rotation = { 0,0,0 }, Vector3 scale = {1,1,1});
+	Object(ObjectType type, Vector3 position = { 0,0,0 }, Vector3 rotation = { 0,0,0 }, Vector3 scale = {1,1,1});
 
 	// TODO: different object types
 };

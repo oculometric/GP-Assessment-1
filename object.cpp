@@ -13,9 +13,11 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 	// TODO: apply inverse transform of this to child transform to compensate for new relationship
 }
 
-Object::Object(Mesh* geom, Vector3 position, Vector3 rotation, Vector3 scale)
+Object::Object(ObjectType type, Vector3 position, Vector3 rotation, Vector3 scale)
 {
-	geometry = geom;
+	object_type = type;
+
+	geometry = NULL;
 	parent = NULL;
 
 	local_position = position;

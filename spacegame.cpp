@@ -12,20 +12,6 @@
 
 #include <iostream>
 
-void SpaceGame::moveAndBounceVertex(Vector2& v, Vector2& v_m, float f)
-{
-	Vector2 projected_point = v + (v_m * f);
-	if (projected_point.x > 1.0f)
-		v_m.x = -abs(v_m.x);
-	if (projected_point.x < -1.0f)
-		v_m.x = abs(v_m.x);
-	if (projected_point.y > 1.0f)
-		v_m.y = -abs(v_m.y);
-	if (projected_point.y < -1.0f)
-		v_m.y = abs(v_m.y);
-	v = projected_point;
-}
-
 inline float randf()
 {
 	return (((float)rand() / (float)RAND_MAX) * 2.0f) - 1.0f;
@@ -39,11 +25,15 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 
 	srand(last_frame_time.time_since_epoch().count());
 
-	v1_m = norm(Vector2{ randf(), randf() });
-	v2_m = norm(Vector2{ randf(), randf() });
-	v3_m = norm(Vector2{ randf(), randf() });
+	root_object = new Object(ObjectType::EMPTY);
+	root_object->name = "root";
+	active_camera = new Object(ObjectType::CAMERA, Vector3{1,0,2}, Vector3{0,23.0f,0});
+	root_object->addChild(active_camera, true);
 
-	m = new Mesh("teapot.obj");
+	Object* teapot = new Object(ObjectType::MESH);
+	teapot->name = "teapot";
+	teapot->geometry = new Mesh("teapot.obj");
+	root_object->addChild(teapot, true);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH);
@@ -67,76 +57,16 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 
 	glFrontFace(GL_CCW);
 
-	camera_position.z = 2.0f;
-	camera_rotation = Vector3{ 0, 0, 0 };
-
 	glutMainLoop();
 }
 
 void SpaceGame::display()
-{
-	
-	auto time_now = std::chrono::high_resolution_clock::now();
-	float delta_time = std::chrono::duration_cast<std::chrono::nanoseconds>(time_now - last_frame_time).count() / 1000000000.0f;
-	last_frame_time = time_now;
-	
+{	
+	// clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Vector3 angle = (camera_rotation * M_PI) / 180.0f;
-	Matrix3 rot_x = { 1,  0,             0,
-					  0,  cos(angle.x), -sin(angle.x),
-					  0,  sin(angle.x),  cos(angle.x)   };
-
-	Matrix3 rot_y = { cos(angle.y),  0,  sin(angle.y),
-					  0,             -1,  0,
-					 -sin(angle.y),  0,  cos(angle.y)   };
-
-	Matrix3 rot_z = { cos(angle.z), -sin(angle.z),  0,
-					  sin(angle.z),  cos(angle.z),  0,
-					  0,             0,             1  };
-
-	// apply y, x, z rotations
-	Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
-	camera_position += camera_global_velocity * Vector3{ 1,-1,1 } * 0.5 * delta_time;
-	
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glRotatef(camera_rotation.y, 0.0f, 1.0f, 0.0f);
-	glRotatef(camera_rotation.x, 1.0f, 0.0f, 0.0f);
-	glRotatef(camera_rotation.z, 0.0f, 0.0f, 1.0f);
-	glTranslatef(-camera_position.x, -camera_position.y, -camera_position.z);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(90, 1, 0.1, 10);
-
-	drawMesh();
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glTranslatef(-0.8f, 0.8f, -0.8);
-	glRotatef(camera_rotation.y, 0.0f, 1.0f, 0.0f);
-	glRotatef(camera_rotation.x, 1.0f, 0.0f, 0.0f);
-	glRotatef(camera_rotation.z, 0.0f, 0.0f, 1.0f);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	glBegin(GL_LINES);
-	{
-		glColor3f(1, 0, 0);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0.2, 0, 0);
-
-		glColor3f(0, 1, 0);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, 0.2, 0);
-
-		glColor3f(0, 0, 1);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, 0, 0.2);
-	}
-	glEnd();
+	if (active_camera)
+		renderFromCamera(active_camera);
 
 	glFlush();
 
@@ -144,11 +74,13 @@ void SpaceGame::display()
 
 void SpaceGame::mouseMove(int x, int y)
 {
-	int diff_x = x - last_mouse_x;
-	int diff_y = y - last_mouse_y;	
+	if (!active_camera) return;
 
-	camera_rotation.x += diff_y * 0.5f;
-	camera_rotation.z += diff_x * 0.5f;
+	int diff_x = x - last_mouse_x;
+	int diff_y = y - last_mouse_y;
+
+	active_camera->local_rotation.x += diff_y * 0.5f;
+	active_camera->local_rotation.z += diff_x * 0.5f;
 
 	last_mouse_x = x;
 	last_mouse_y = y;
@@ -187,20 +119,129 @@ void SpaceGame::keyUp(uint8_t key, int x, int y)
 
 void SpaceGame::frameRefresh(int value)
 {
+	// get delta time
+	auto time_now = std::chrono::high_resolution_clock::now();
+	float delta_time = std::chrono::duration_cast<std::chrono::nanoseconds>(time_now - last_frame_time).count() / 1000000000.0f;
+	last_frame_time = time_now;
+
+	if (active_camera)
+	{
+		Vector3 angle = (active_camera->local_rotation * M_PI) / 180.0f;
+		Matrix3 rot_x = { 1,  0,             0,
+						  0,  cos(angle.x), -sin(angle.x),
+						  0,  sin(angle.x),  cos(angle.x) };
+
+		Matrix3 rot_y = { cos(angle.y),  0,  sin(angle.y),
+						  0,             -1,  0,
+						 -sin(angle.y),  0,  cos(angle.y) };
+
+		Matrix3 rot_z = { cos(angle.z), -sin(angle.z),  0,
+						  sin(angle.z),  cos(angle.z),  0,
+						  0,             0,             1 };
+
+		// apply y, x, z rotations
+		Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
+		active_camera->local_position += camera_global_velocity * Vector3{ 1,-1,1 } *0.5 * delta_time;
+	}
+
 	glutPostRedisplay();
 	glutTimerFunc(value, glut_callback_handlers::frameRefresh, value);
 }
 
-void SpaceGame::drawMesh()
+void SpaceGame::renderFromCamera(Object* camera)
 {
-	if (m->triangles == NULL || m->vertices == NULL) return;
+	if (!camera) return;
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRotatef(camera->local_rotation.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(camera->local_rotation.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(camera->local_rotation.z, 0.0f, 0.0f, 1.0f);
+	glTranslatef(-camera->local_position.x, -camera->local_position.y, -camera->local_position.z);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(90, 1, 0.1, 10);
+
+	if (root_object)
+	{
+		renderHierarchy(root_object);
+	}
+
+	renderAxesGizmo(camera);
+}
+
+void SpaceGame::renderHierarchy(Object* root)
+{
+	if (!root) return;
+
+	// push new matrix
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	// apply transformation matrix of root
+	glScalef(root->local_scale.x, root->local_scale.y, root->local_scale.z);
+	glRotatef(root->local_rotation.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(root->local_rotation.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(root->local_rotation.z, 0.0f, 0.0f, 1.0f);
+	glTranslatef(root->local_position.x, root->local_position.y, root->local_position.z);
+	
+	// draw root
+	drawObject(root);
+
+	// iterate over children, calling renderHierarchy on each
+	for (Object* child : root->children)
+	{
+		renderHierarchy(child);
+	}
+	
+	// pop matrix
+	glPopMatrix();
+}
+
+void SpaceGame::renderAxesGizmo(Object* camera)
+{
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef(-0.8f, 0.8f, -0.8);
+	glRotatef(camera->local_rotation.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(camera->local_rotation.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(camera->local_rotation.z, 0.0f, 0.0f, 1.0f);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glBegin(GL_LINES);
+	{
+		glColor3f(1, 0, 0);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0.2, 0, 0);
+
+		glColor3f(0, 1, 0);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0.2, 0);
+
+		glColor3f(0, 0, 1);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0, 0.2);
+	}
+	glEnd();
+}
+
+void SpaceGame::drawObject(Object* obj)
+{
+	std::cout << "drawing object " << obj->name << std::endl;
+	if (obj->object_type != ObjectType::MESH) return;
+	if (!obj->geometry) return;
+	if (obj->geometry->triangles == NULL || obj->geometry->vertices == NULL) return;
 
 	glPolygonMode(GL_BACK, GL_LINE);
 
 	glBegin(GL_TRIANGLES);
-	for (uint32_t i = 0; i < m->trisCount(); i++)
+	for (uint32_t i = 0; i < obj->geometry->trisCount(); i++)
 	{
-		Vector3 vert = m->vertices[m->triangles[i]] * 0.5f;
+		Vector3 vert = obj->geometry->vertices[obj->geometry->triangles[i]] * 0.5f;
 		glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
 		glVertex3f(vert.x * 0.5f, vert.y * 0.5f, vert.z * 0.5f);
 	}
