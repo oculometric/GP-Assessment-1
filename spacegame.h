@@ -10,9 +10,12 @@ class SpaceGame
 {
 private:
 	Object* active_camera = NULL;
+	float camera_matrix[16] = { 0 };
 	Vector3 camera_local_velocity;
 
 	Object* root_object;
+
+	Object* ship;
 
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;

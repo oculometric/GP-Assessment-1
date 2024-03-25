@@ -49,7 +49,6 @@ Mesh::Mesh(std::string path)
     file.open(path);
     if (!file.is_open()) throw new std::exception("unable to open file");
 
-
     // prepass to count vertices and triangles
     uint16_t found_vertices = 0;
     uint16_t found_triangles = 0;
