@@ -24,13 +24,12 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 
 	last_frame_time = std::chrono::high_resolution_clock::now();
 
-	srand(last_frame_time.time_since_epoch().count());
+	srand((unsigned int)last_frame_time.time_since_epoch().count());
 
 	// core scene initialisation
 	root_object = new Object();
 	root_object->name = "root";
 	active_camera = new CameraObject(90.0f, 0.01f, 64.0f, (float)x/(float)y, Vector3{ 0,-1,1 }, Vector3{ -23.0f,0,0 });
-	root_object->addChild(active_camera, true);
 
 	// now adding some demo objects
 	Object* teapot = new MeshObject(new Mesh("teapot.obj"));
@@ -42,15 +41,17 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 	teapot2->name = "teapot";
 	root_object->addChild(teapot2, true);
 
-	Object* suzanne = new MeshObject(new Mesh("suzanne.obj"), Vector3{ 0,0,2 }, Vector3{ 0,0,0 }, Vector3{ 3,3,3 });
+	Object* suzanne = new MeshObject(new Mesh("suzanne.obj"), Vector3{ 0,1,2 }, Vector3{ 0,0,0 }, Vector3{ 3,3,3 });
 	suzanne->name = "suzanne";
 	suzanne->velocity_lin.z = 0.1f;
 	teapot->addChild(suzanne, true);
 
-	ship = new MeshObject(new Mesh("beholder_v3.obj"), Vector3{ 0,2,0 }, Vector3{ 90,90,0 }, Vector3{ 0.5f,0.5f,0.5f });
-	ship->velocity_ang.z = -60.0f;
+	ship = new MeshObject(new Mesh("beholder_v3.obj"), Vector3{ 0,2,0 }, Vector3{ 0,-90,90 }, Vector3{ 0.5f,0.5f,0.5f });
+	ship->velocity_ang.x = -60.0f;
 	ship->name = "ship";
 	suzanne->addChild(ship, true);
+
+	ship->addChild(active_camera, true);
 
 	// GLUT and GL initialisation
 	glutInit(&argc, argv);
@@ -152,7 +153,7 @@ void SpaceGame::frameRefresh(int value)
 	// handle camera movement
 	if (active_camera)
 	{
-		Vector3 angle = (active_camera->local_rotation * M_PI) / 180.0f;
+		Vector3 angle = active_camera->local_rotation * (M_PI / 180.0f);
 		Matrix3 rot_x = { 1,  0,             0,
 						  0,  cos(angle.x), -sin(angle.x),
 						  0,  sin(angle.x),  cos(angle.x) };
@@ -216,13 +217,20 @@ void SpaceGame::renderFromCamera(CameraObject* camera)
 	// if the camera supplied is null, return
 	if (!camera) return;
 
-	// compute a matrix for the camera's transform (i.e. world-to-view) TODO: take parent rotation into account
+	// compute a matrix for the camera's transform (i.e. world-to-view)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glRotatef(camera->local_rotation.y, 0.0f, 1.0f, 0.0f);
-	glRotatef(camera->local_rotation.x, 1.0f, 0.0f, 0.0f);
-	glRotatef(camera->local_rotation.z, 0.0f, 0.0f, 1.0f);
-	glTranslatef(-camera->local_position.x, -camera->local_position.y, -camera->local_position.z);
+	Object* camera_matrix_stack = camera;
+	while (camera_matrix_stack != NULL)
+	{
+		glScalef(1.0f / camera_matrix_stack->local_scale.x, 1.0f / camera_matrix_stack->local_scale.y, 1.0f / camera_matrix_stack->local_scale.z);
+		glRotatef(camera_matrix_stack->local_rotation.y, 0.0f, 1.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.x, 1.0f, 0.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.z, 0.0f, 0.0f, 1.0f);
+		glTranslatef(-camera_matrix_stack->local_position.x, -camera_matrix_stack->local_position.y, -camera_matrix_stack->local_position.z);
+		
+		camera_matrix_stack = camera_matrix_stack->parent;
+	}
 
 	// set the projection matrix to be a simple perspective matrix
 	glMatrixMode(GL_PROJECTION);
@@ -231,10 +239,6 @@ void SpaceGame::renderFromCamera(CameraObject* camera)
 
 	float light_pos[4] = { 0,0,1,0 };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-	float light_att[3] = { 1,0,0 };
-	glLightfv(GL_LIGHT0, GL_CONSTANT_ATTENUATION, light_att);
-	glLightfv(GL_LIGHT0, GL_LINEAR_ATTENUATION, light_att + 1);
-	glLightfv(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, light_att + 2);
 
 	// render the entire object heirarchy
 	if (root_object)
@@ -254,9 +258,9 @@ void SpaceGame::renderHierarchy(Object* root)
 
 	// apply transformation matrix of root
 	glTranslatef(root->local_position.x, root->local_position.y, root->local_position.z);
-	glRotatef(root->local_rotation.y, 0.0f, 1.0f, 0.0f);
-	glRotatef(root->local_rotation.x, 1.0f, 0.0f, 0.0f);
-	glRotatef(root->local_rotation.z, 0.0f, 0.0f, 1.0f);
+	glRotatef(-root->local_rotation.z, 0.0f, 0.0f, 1.0f);
+	glRotatef(-root->local_rotation.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(-root->local_rotation.y, 0.0f, 1.0f, 0.0f);
 	glScalef(root->local_scale.x, root->local_scale.y, root->local_scale.z);
 
 	// draw root
@@ -278,10 +282,16 @@ void SpaceGame::renderAxesGizmo(CameraObject* camera)
 	// reset the world-to-view camera stack, moving the axes to the top left of the screen
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8);
-	glRotatef(camera->local_rotation.y, 0.0f, 1.0f, 0.0f);
-	glRotatef(camera->local_rotation.x, 1.0f, 0.0f, 0.0f);
-	glRotatef(camera->local_rotation.z, 0.0f, 0.0f, 1.0f);
+	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8f);
+	Object* camera_matrix_stack = camera;
+	while (camera_matrix_stack != NULL)
+	{
+		glRotatef(camera_matrix_stack->local_rotation.y, 0.0f, 1.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.x, 1.0f, 0.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.z, 0.0f, 0.0f, 1.0f);
+
+		camera_matrix_stack = camera_matrix_stack->parent;
+	}
 
 	// orthographic projection
 	glMatrixMode(GL_PROJECTION);
@@ -296,15 +306,15 @@ void SpaceGame::renderAxesGizmo(CameraObject* camera)
 	{
 		glColor3f(1, 0, 0);
 		glVertex3f(0, 0, 0);
-		glVertex3f(0.2, 0, 0);
+		glVertex3f(0.18f, 0, 0);
 
 		glColor3f(0, 1, 0);
 		glVertex3f(0, 0, 0);
-		glVertex3f(0, 0.2, 0);
+		glVertex3f(0, 0.18f, 0);
 
 		glColor3f(0, 0, 1);
 		glVertex3f(0, 0, 0);
-		glVertex3f(0, 0, 0.2);
+		glVertex3f(0, 0, 0.18f);
 	}
 	glEnd();
 
@@ -326,7 +336,6 @@ void SpaceGame::drawObject(MeshObject* obj)
 	col[0] = (float)obj->name[0] / 255.0f;
 	col[1] = (float)obj->name[1] / 255.0f;
 	col[2] = (float)obj->name[2] / 255.0f;
-	//glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col);
 
 	// draw triangle mesh
 	glBegin(GL_TRIANGLES);
@@ -337,10 +346,9 @@ void SpaceGame::drawObject(MeshObject* obj)
 		normal = norm(normal);
 		Vector2 uv = obj->geometry->uvs[i];
 		float col[4] = { normal.x, normal.y, normal.z, 1.0f };
-		//glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
-		//glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
 		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col);
-		//glColor3f(uv.x, uv.y, 0.0f);
+
+		glTexCoord2f(uv.x, uv.y);
 		glNormal3f(normal.x, normal.y, normal.z);
 		glVertex3f(vert.x * 0.5f, vert.y * 0.5f, vert.z * 0.5f);
 	}
