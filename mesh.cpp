@@ -195,6 +195,14 @@ Mesh::Mesh(std::string path)
             if (fci.vn < found_vnorms && found_vnorms > 0)
                 vertex_normals[f_ind] = vns_temp[fci.vn];
             f_ind++;
+
+            // recompute normal and fill in blanks
+            Vector3 v01 = vertices[triangles[f_ind - 2]] - vertices[triangles[f_ind - 3]];
+            Vector3 v02 = vertices[triangles[f_ind - 1]] - vertices[triangles[f_ind - 3]];
+            Vector3 normal = norm(v01 % v02);
+            if (mag(vertex_normals[f_ind - 3]) < 0.01f) vertex_normals[f_ind - 3] = normal;
+            if (mag(vertex_normals[f_ind - 2]) < 0.01f) vertex_normals[f_ind - 2] = normal;
+            if (mag(vertex_normals[f_ind - 1]) < 0.01f) vertex_normals[f_ind - 1] = normal;
         }
         file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
@@ -204,6 +212,12 @@ Mesh::Mesh(std::string path)
 
     if (found_uvs > 0) delete[] uvs_temp;
     if (found_vnorms > 0) delete[] vns_temp;
+
+    std::cout << "loaded object " << path << std::endl;
+    std::cout << "    tris: " << found_triangles << std::endl;
+    std::cout << "    verts: " << found_vertices << std::endl;
+    std::cout << "    uvs: " << found_uvs << std::endl;
+    std::cout << "    vnorms: " << found_vnorms << std::endl;
 }
 
 Mesh::~Mesh()

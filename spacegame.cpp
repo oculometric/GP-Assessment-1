@@ -79,7 +79,8 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 	// enable lighting
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	glShadeModel(GL_FLAT);
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_NORMALIZE);
 
 	// aaaaaand, go!
 	glutMainLoop();
@@ -228,13 +229,12 @@ void SpaceGame::renderFromCamera(CameraObject* camera)
 	glLoadIdentity();
 	gluPerspective(camera->fov_degrees, camera->aspect_ratio, camera->near_clip, camera->far_clip);
 
-	// FIXME: huh?
-	float light_pos[4] = { 1,0,0,0 };
+	float light_pos[4] = { 0,0,1,0 };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 	float light_att[3] = { 1,0,0 };
 	glLightfv(GL_LIGHT0, GL_CONSTANT_ATTENUATION, light_att);
-	glLightfv(GL_LIGHT0, GL_LINEAR_ATTENUATION, light_att+1);
-	glLightfv(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, light_att+2);
+	glLightfv(GL_LIGHT0, GL_LINEAR_ATTENUATION, light_att + 1);
+	glLightfv(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, light_att + 2);
 
 	// render the entire object heirarchy
 	if (root_object)
@@ -322,17 +322,26 @@ void SpaceGame::drawObject(MeshObject* obj)
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_LINE);
 
+	float col[4] = { 0,0,0,0 };
+	col[0] = (float)obj->name[0] / 255.0f;
+	col[1] = (float)obj->name[1] / 255.0f;
+	col[2] = (float)obj->name[2] / 255.0f;
+	//glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col);
+
 	// draw triangle mesh
 	glBegin(GL_TRIANGLES);
 	for (uint32_t i = 0; i < obj->geometry->trisCount(); i++)
 	{
 		Vector3 vert = obj->geometry->vertices[obj->geometry->triangles[i]] * 0.5f;
-		Vector2 uv = obj->geometry->uvs[obj->geometry->triangles[i]];
-		float col[4] = { vert.x, vert.y, vert.z, 1.0f };
+		Vector3 normal = obj->geometry->vertex_normals[i];
+		normal = norm(normal);
+		Vector2 uv = obj->geometry->uvs[i];
+		float col[4] = { normal.x, normal.y, normal.z, 1.0f };
 		//glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
-		glMaterialfv(GL_FRONT, GL_AMBIENT, col);
+		//glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col);
 		//glColor3f(uv.x, uv.y, 0.0f);
+		glNormal3f(normal.x, normal.y, normal.z);
 		glVertex3f(vert.x * 0.5f, vert.y * 0.5f, vert.z * 0.5f);
 	}
 	glEnd();
