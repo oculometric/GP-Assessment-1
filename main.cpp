@@ -1,8 +1,9 @@
-#include "spacegame.h"
+#include "scene_manager.h"
+#include "space_game.h"
 
 int main(int argc, char* argv[])
 {
-	SpaceGame s(argc, argv, 600, 600);
+	SceneManager s(argc, argv, 600, 600, new SpaceGame());
 
 
 }

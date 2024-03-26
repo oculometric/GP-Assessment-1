@@ -3,11 +3,11 @@
 #include <stdint.h>
 
 // forward declaration
-class SpaceGame;
+class SceneManager;
 
 namespace glut_callback_handlers
 {
-	void init(SpaceGame* s);
+	void init(SceneManager* s);
 
 	void display();
 

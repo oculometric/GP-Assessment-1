@@ -1,4 +1,4 @@
-#include "spacegame.h"
+#include "scene_manager.h"
 
 #include <Windows.h>
 #include <gl/GL.h>
@@ -18,7 +18,7 @@ inline float randf()
 	return (((float)rand() / (float)RAND_MAX) * 2.0f) - 1.0f;
 }
 
-SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
+SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game)
 {
 	glut_callback_handlers::init(this);
 
@@ -30,28 +30,7 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 	root_object = new Object();
 	root_object->name = "root";
 	active_camera = new CameraObject(90.0f, 0.01f, 64.0f, (float)x/(float)y, Vector3{ 0,-1,1 }, Vector3{ -23.0f,0,0 });
-
-	// now adding some demo objects
-	Object* teapot = new MeshObject(new Mesh("teapot.obj"));
-	teapot->name = "teapot";
-	teapot->velocity_ang.z = 30.0f;
-	root_object->addChild(teapot, true);
-
-	Object* teapot2 = new MeshObject(new Mesh("teapot.obj"), Vector3{ 2,0,0 });
-	teapot2->name = "teapot";
-	root_object->addChild(teapot2, true);
-
-	Object* suzanne = new MeshObject(new Mesh("suzanne.obj"), Vector3{ 0,1,2 }, Vector3{ 0,0,0 }, Vector3{ 3,3,3 });
-	suzanne->name = "suzanne";
-	suzanne->velocity_lin.z = 0.1f;
-	teapot->addChild(suzanne, true);
-
-	ship = new MeshObject(new Mesh("beholder_v3.obj"), Vector3{ 0,2,0 }, Vector3{ 0,-90,90 }, Vector3{ 0.5f,0.5f,0.5f });
-	ship->velocity_ang.x = -60.0f;
-	ship->name = "ship";
-	suzanne->addChild(ship, true);
-
-	ship->addChild(active_camera, true);
+	root_object->addChild(active_camera, true);
 
 	// GLUT and GL initialisation
 	glutInit(&argc, argv);
@@ -81,13 +60,17 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glShadeModel(GL_SMOOTH);
-	glEnable(GL_NORMALIZE);
+
+	game_manager = game;
+	game_manager->init(this);
+
+	game_manager->start();
 
 	// aaaaaand, go!
 	glutMainLoop();
 }
 
-void SpaceGame::display()
+void SceneManager::display()
 {	
 	// clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -98,78 +81,49 @@ void SpaceGame::display()
 	glFlush();
 }
 
-void SpaceGame::mouseMove(int x, int y)
+void SceneManager::mouseMove(int x, int y)
 {
-	if (!active_camera) return;
-
 	int diff_x = x - last_mouse_x;
 	int diff_y = y - last_mouse_y;
-
-	active_camera->local_rotation.x += diff_y * 0.5f;
-	active_camera->local_rotation.z += diff_x * 0.5f;
-
 	last_mouse_x = x;
 	last_mouse_y = y;
+
+	game_manager->mouseMove(diff_x, diff_y, true);
 }
 
-void SpaceGame::mouseMovePassive(int x, int y)
+void SceneManager::mouseMovePassive(int x, int y)
 {
+	int diff_x = x - last_mouse_x;
+	int diff_y = y - last_mouse_y;
 	last_mouse_x = x;
 	last_mouse_y = y;
+
+	game_manager->mouseMove(diff_x, diff_y, false);
 }
 
-void SpaceGame::mouseClick(int button, int state, int x, int y)
+void SceneManager::mouseClick(int button, int state, int x, int y)
 {
-	std::cout << "button " << button << (state ? " up" : " down") << std::endl;
+	game_manager->mousePressed(button, state, x, y);
 }
 
-void SpaceGame::keyDown(uint8_t key, int x, int y)
+void SceneManager::keyDown(uint8_t key, int x, int y)
 {
-	if (key == 'w') camera_local_velocity.z += -1.0f;
-	if (key == 's') camera_local_velocity.z += 1.0f;
-	if (key == 'a') camera_local_velocity.x += -1.0f;
-	if (key == 'd') camera_local_velocity.x += 1.0f;
-	if (key == 'q') camera_local_velocity.y += -1.0f;
-	if (key == 'e') camera_local_velocity.y += 1.0f;
+	game_manager->keyPressed(key, true);
 }
 
-void SpaceGame::keyUp(uint8_t key, int x, int y)
+void SceneManager::keyUp(uint8_t key, int x, int y)
 {
-	if (key == 'w') camera_local_velocity.z -= -1.0f;
-	if (key == 's') camera_local_velocity.z -= 1.0f;
-	if (key == 'a') camera_local_velocity.x -= -1.0f;
-	if (key == 'd') camera_local_velocity.x -= 1.0f;
-	if (key == 'q') camera_local_velocity.y -= -1.0f;
-	if (key == 'e') camera_local_velocity.y -= 1.0f;
+	game_manager->keyPressed(key, false);
 }
 
-void SpaceGame::frameRefresh(int value)
+void SceneManager::frameRefresh(int value)
 {
 	// get delta time
 	auto time_now = std::chrono::high_resolution_clock::now();
 	float delta_time = std::chrono::duration_cast<std::chrono::nanoseconds>(time_now - last_frame_time).count() / 1000000000.0f;
 	last_frame_time = time_now;
 
-	// handle camera movement
-	if (active_camera)
-	{
-		Vector3 angle = active_camera->local_rotation * (M_PI / 180.0f);
-		Matrix3 rot_x = { 1,  0,             0,
-						  0,  cos(angle.x), -sin(angle.x),
-						  0,  sin(angle.x),  cos(angle.x) };
-
-		Matrix3 rot_y = { cos(angle.y),  0,  sin(angle.y),
-						  0,             -1,  0,
-						 -sin(angle.y),  0,  cos(angle.y) };
-
-		Matrix3 rot_z = { cos(angle.z), -sin(angle.z),  0,
-						  sin(angle.z),  cos(angle.z),  0,
-						  0,             0,             1 };
-
-		// apply y, x, z rotations
-		Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
-		active_camera->local_position += camera_global_velocity * Vector3{ 1,-1,1 } * delta_time;
-	}
+	game_manager->update(delta_time);
 
 	// perform physics update for all objects
 	std::queue<Object*> physics_tick_queue;
@@ -206,13 +160,19 @@ void SpaceGame::frameRefresh(int value)
 	glutTimerFunc(value, glut_callback_handlers::frameRefresh, value);
 }
 
-void SpaceGame::resizeWindow(int x, int y)
+void SceneManager::resizeWindow(int x, int y)
 {
 	glViewport(0, 0, x, y);
 	active_camera->aspect_ratio = (float)x / (float)y;
 }
 
-void SpaceGame::renderFromCamera(CameraObject* camera)
+void SceneManager::addObject(Object* obj)
+{
+	// TODO: add lots of NULL-checks
+	root_object->addChild(obj, true);
+}
+
+void SceneManager::renderFromCamera(CameraObject* camera)
 {
 	// if the camera supplied is null, return
 	if (!camera) return;
@@ -248,7 +208,7 @@ void SpaceGame::renderFromCamera(CameraObject* camera)
 	renderAxesGizmo(camera);
 }
 
-void SpaceGame::renderHierarchy(Object* root)
+void SceneManager::renderHierarchy(Object* root)
 {
 	if (!root) return;
 
@@ -277,7 +237,7 @@ void SpaceGame::renderHierarchy(Object* root)
 	glPopMatrix();
 }
 
-void SpaceGame::renderAxesGizmo(CameraObject* camera)
+void SceneManager::renderAxesGizmo(CameraObject* camera)
 {
 	// reset the world-to-view camera stack, moving the axes to the top left of the screen
 	glMatrixMode(GL_MODELVIEW);
@@ -322,7 +282,7 @@ void SpaceGame::renderAxesGizmo(CameraObject* camera)
 	glEnable(GL_LIGHTING);
 }
 
-void SpaceGame::drawObject(MeshObject* obj)
+void SceneManager::drawObject(MeshObject* obj)
 {
 	// if the object isn't a mesh, or it's empty, or it has no triangles, give up
 	if (!obj->geometry) return;
@@ -356,5 +316,5 @@ void SpaceGame::drawObject(MeshObject* obj)
 }
 
 
-SpaceGame::~SpaceGame()
+SceneManager::~SceneManager()
 { }

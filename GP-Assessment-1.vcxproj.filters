@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="spacegame.cpp">
+    <ClCompile Include="scene_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="glut_callback_handlers.cpp">
@@ -30,9 +30,15 @@
     <ClCompile Include="object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="game_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="space_game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="spacegame.h">
+    <ClInclude Include="scene_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="glut_callback_handlers.h">
@@ -51,6 +57,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="space_game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

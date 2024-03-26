@@ -1,15 +1,15 @@
 #include "glut_callback_handlers.h"
 
-#include "spacegame.h"
+#include "scene_manager.h"
 
 namespace glut_callback_handlers
 {
 	namespace
 	{
-		SpaceGame* game_global = nullptr;
+		SceneManager* game_global = nullptr;
 	}
 
-	void init(SpaceGame* s) { game_global = s; }
+	void init(SceneManager* s) { game_global = s; }
 
 	void display() { if (game_global) game_global->display(); }
 

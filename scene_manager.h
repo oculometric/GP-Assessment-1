@@ -5,27 +5,29 @@
 #include "vector2.h"
 #include "mesh.h"
 #include "object.h"
+#include "game_manager.h"
 
-class SpaceGame
+class SceneManager
 {
 private:
 	CameraObject* active_camera = NULL;
-	Vector3 camera_local_velocity;
 
 	Object* root_object;
 
-	Object* ship;
+	GameManager* game_manager;
 
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;
 	std::chrono::steady_clock::time_point last_frame_time;
 
 	void renderFromCamera(CameraObject* camera);
-	void renderHierarchy(Object* root);
 	void renderAxesGizmo(CameraObject* camera);
+	void renderHierarchy(Object* root);
 	void drawObject(MeshObject* obj);
 public:
-	SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y);
+	SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game);
+
+	// callbacks, don't touch these
 
 	void display();
 	void mouseMove(int x, int y);
@@ -36,7 +38,10 @@ public:
 	void frameRefresh(int value);
 	void resizeWindow(int x, int y);
 
-	SpaceGame() = delete;
+	inline CameraObject* getCamera() { return active_camera; }
+	void addObject(Object* obj);
 
-	~SpaceGame();
+	SceneManager() = delete;
+
+	~SceneManager();
 };
