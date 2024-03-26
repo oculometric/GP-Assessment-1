@@ -2,6 +2,8 @@
 #include "scene_manager.h"
 #include "object.h"
 #include "matrix3.h"
+#include "GL/freeglut.h"
+#include "GL/glut.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -13,14 +15,16 @@ void SpaceGame::start()
 	scene_manager->addObject(ship);
 
 	camera_focus = new Object();
-	scene_manager->addObject(camera_focus);
+	ship->addChild(camera_focus, true);
 
 	CameraObject* cam = scene_manager->getCamera();
 	cam->removeFromParent(true);
 
-	cam->local_position = Vector3{ 0,0,2 };
-	cam->local_rotation = Vector3{ 0,0,0 };
+	cam->local_position = Vector3{ 0,0,3 };
+	cam->local_rotation = Vector3{ 180.0f,180.0f,180.0f };
 	camera_focus->addChild(cam, true);
+
+	ShowCursor(false);
 }
 
 void SpaceGame::update(float delta_time)
@@ -47,7 +51,6 @@ void SpaceGame::update(float delta_time)
 void SpaceGame::mouseMove(int delta_x, int delta_y, bool down)
 {
 	if (!down) return;
-	// TODO: camera pan around ship effect
 	camera_focus->local_rotation.x += delta_y * 0.5f;
 	camera_focus->local_rotation.z += delta_x * 0.5f;
 }
@@ -57,8 +60,8 @@ void SpaceGame::keyPressed(unsigned char key, bool down)
 	float up_down = down ? 1.0f : -1.0f;
 	if (key == 'w') camera_local_velocity.z += -1.0f * up_down;
 	if (key == 's') camera_local_velocity.z += 1.0f * up_down;
-	if (key == 'a') camera_local_velocity.x += -1.0f * up_down;
+	/*if (key == 'a') camera_local_velocity.x += -1.0f * up_down;
 	if (key == 'd') camera_local_velocity.x += 1.0f * up_down;
 	if (key == 'q') camera_local_velocity.y += -1.0f * up_down;
-	if (key == 'e') camera_local_velocity.y += 1.0f * up_down;
+	if (key == 'e') camera_local_velocity.y += 1.0f * up_down;*/
 }

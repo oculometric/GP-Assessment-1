@@ -197,8 +197,14 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	glLoadIdentity();
 	gluPerspective(camera->fov_degrees, camera->aspect_ratio, camera->near_clip, camera->far_clip);
 
+	// do lighting stuff. does this need to be here?
 	float light_pos[4] = { 0,0,1,0 };
+	float ambient[4] = { 0.1f,0.1f,0.1f,1.0f };
+	float diffuse[4] = { 4.0f,3.8f,3.6f,1.0f };
+
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
 	// render the entire object heirarchy
 	if (root_object)

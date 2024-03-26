@@ -32,6 +32,7 @@ void Object::removeFromParent(bool keep_world_transform)
 
 	std::swap(parent->children[index], parent->children.back());
 	parent->children.pop_back();
+	parent = NULL;
 }
 
 void Object::performPhysicsUpdate(float delta_time)
