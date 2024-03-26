@@ -13,6 +13,27 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 	// TODO: apply inverse transform of this to child transform to compensate for new relationship
 }
 
+void Object::removeFromParent(bool keep_world_transform)
+{
+	if (parent == NULL) return;
+
+	int index = 0;
+	for (Object* obj : parent->children)
+	{
+		if (obj == this) break;
+		index++;
+	}
+
+	if (index >= parent->children.size())
+	{
+		parent = NULL;
+		return;
+	}
+
+	std::swap(parent->children[index], parent->children.back());
+	parent->children.pop_back();
+}
+
 void Object::performPhysicsUpdate(float delta_time)
 {
 	local_position += velocity_lin * delta_time;

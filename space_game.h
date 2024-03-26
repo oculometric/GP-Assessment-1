@@ -9,6 +9,7 @@ class SpaceGame : public GameManager
 private:
 	Vector3 camera_local_velocity;
 	MeshObject* ship;
+	Object* camera_focus;
 
 public:
 	void start() override;

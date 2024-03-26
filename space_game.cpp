@@ -11,6 +11,16 @@ void SpaceGame::start()
 	ship = new MeshObject(new Mesh("beholder_v3.obj"));
 	ship->name = "spaceship";
 	scene_manager->addObject(ship);
+
+	camera_focus = new Object();
+	scene_manager->addObject(camera_focus);
+
+	CameraObject* cam = scene_manager->getCamera();
+	cam->removeFromParent(true);
+
+	cam->local_position = Vector3{ 0,0,2 };
+	cam->local_rotation = Vector3{ 0,0,0 };
+	camera_focus->addChild(cam, true);
 }
 
 void SpaceGame::update(float delta_time)
@@ -37,9 +47,9 @@ void SpaceGame::update(float delta_time)
 void SpaceGame::mouseMove(int delta_x, int delta_y, bool down)
 {
 	if (!down) return;
-
-	scene_manager->getCamera()->local_rotation.x += delta_y * 0.5f;
-	scene_manager->getCamera()->local_rotation.z += delta_x * 0.5f;
+	// TODO: camera pan around ship effect
+	camera_focus->local_rotation.x += delta_y * 0.5f;
+	camera_focus->local_rotation.z += delta_x * 0.5f;
 }
 
 void SpaceGame::keyPressed(unsigned char key, bool down)
