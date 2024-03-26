@@ -13,11 +13,19 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 	// TODO: apply inverse transform of this to child transform to compensate for new relationship
 }
 
-Object::Object(ObjectType type, Vector3 position, Vector3 rotation, Vector3 scale)
+void Object::performPhysicsUpdate(float delta_time)
 {
-	object_type = type;
+	local_position += velocity_lin * delta_time;
+	local_rotation += velocity_ang * delta_time;
+}
 
-	geometry = NULL;
+ObjectType Object::getType()
+{
+	return ObjectType::EMPTY;
+}
+
+Object::Object(Vector3 position, Vector3 rotation, Vector3 scale)
+{
 	parent = NULL;
 
 	local_position = position;
@@ -25,3 +33,35 @@ Object::Object(ObjectType type, Vector3 position, Vector3 rotation, Vector3 scal
 	local_scale = scale;
 }
 
+ObjectType MeshObject::getType()
+{
+	return ObjectType::MESH;
+}
+
+MeshObject::MeshObject(Mesh* _geometry, Vector3 position, Vector3 rotation, Vector3 scale)
+{
+	geometry = _geometry;
+	
+	parent = NULL;
+	local_position = position;
+	local_rotation = rotation;
+	local_scale = scale;
+}
+
+ObjectType CameraObject::getType()
+{
+	return ObjectType::CAMERA;
+}
+
+CameraObject::CameraObject(float _fov_degrees, float near, float far, float aspect, Vector3 position, Vector3 rotation, Vector3 scale)
+{
+	fov_degrees = _fov_degrees;
+	near_clip = near;
+	far_clip = far;
+	aspect_ratio = aspect;
+	
+	parent = NULL;
+	local_position = position;
+	local_rotation = rotation;
+	local_scale = scale;
+}

@@ -25,4 +25,6 @@ namespace glut_callback_handlers
 
 	void frameRefresh(int value) { if (game_global) game_global->frameRefresh(value); }
 
+	void resizeWindow(int x, int y) { if (game_global) game_global->resizeWindow(x, y); }
+
 }

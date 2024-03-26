@@ -6,6 +6,7 @@
 #include "GL/freeglut.h"
 #include "glut_callback_handlers.h"
 #include "matrix3.h"
+#include <queue>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -25,29 +26,30 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 
 	srand(last_frame_time.time_since_epoch().count());
 
-	root_object = new Object(ObjectType::EMPTY);
+	// core scene initialisation
+	root_object = new Object();
 	root_object->name = "root";
-	active_camera = new Object(ObjectType::CAMERA, Vector3{ 0,-1,1 }, Vector3{ -23.0f,0,0 });
+	active_camera = new CameraObject(90.0f, 0.01f, 64.0f, (float)x/(float)y, Vector3{ 0,-1,1 }, Vector3{ -23.0f,0,0 });
 	root_object->addChild(active_camera, true);
 
-	Object* teapot = new Object(ObjectType::MESH);
+	// now adding some demo objects
+	Object* teapot = new MeshObject(new Mesh("teapot.obj"));
 	teapot->name = "teapot";
-	teapot->geometry = new Mesh("teapot.obj");
+	teapot->velocity_ang.z = 30.0f;
 	root_object->addChild(teapot, true);
 
-	Object* teapot2 = new Object(ObjectType::MESH, Vector3{ 2,0,0 });
+	Object* teapot2 = new MeshObject(new Mesh("teapot.obj"), Vector3{ 2,0,0 });
 	teapot2->name = "teapot";
-	teapot2->geometry = new Mesh("teapot.obj");
 	root_object->addChild(teapot2, true);
 
-	Object* suzanne = new Object(ObjectType::MESH, Vector3{ 0,0,2 }, Vector3{ 0,0,0 }, Vector3{ 3,3,3 });
+	Object* suzanne = new MeshObject(new Mesh("suzanne.obj"), Vector3{ 0,0,2 }, Vector3{ 0,0,0 }, Vector3{ 3,3,3 });
 	suzanne->name = "suzanne";
-	suzanne->geometry = new Mesh("suzanne.obj");
+	suzanne->velocity_lin.z = 0.1f;
 	teapot->addChild(suzanne, true);
 
-	ship = new Object(ObjectType::MESH, Vector3{ 0,2,0 }, Vector3{ 90,90,0 }, Vector3{ 0.5f,0.5f,0.5f });
+	ship = new MeshObject(new Mesh("beholder_v3.obj"), Vector3{ 0,2,0 }, Vector3{ 90,90,0 }, Vector3{ 0.5f,0.5f,0.5f });
+	ship->velocity_ang.z = -60.0f;
 	ship->name = "ship";
-	ship->geometry = new Mesh("beholder_v3.obj");
 	suzanne->addChild(ship, true);
 
 	// GLUT and GL initialisation
@@ -56,6 +58,7 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glutInitWindowSize(x, y);
 	glutInitWindowPosition(50, 50);
 	glutCreateWindow("GP");
+	// configure callbacks
 	glutDisplayFunc(glut_callback_handlers::display);
 	glutMotionFunc(glut_callback_handlers::mouseMove);
 	glutPassiveMotionFunc(glut_callback_handlers::mouseMovePassive);
@@ -63,16 +66,22 @@ SpaceGame::SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y)
 	glutKeyboardFunc(glut_callback_handlers::keyDown);
 	glutKeyboardUpFunc(glut_callback_handlers::keyUp);
 	glutIgnoreKeyRepeat(1);
+	glutReshapeFunc(glut_callback_handlers::resizeWindow);
 	glutTimerFunc(1000 / 60, glut_callback_handlers::frameRefresh, 1000 / 60);
-
+	// enable depth buffer/testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-
+	// cull backfaces
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-
+	// counter-clockwise winding
 	glFrontFace(GL_CCW);
+	// enable lighting
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glShadeModel(GL_FLAT);
 
+	// aaaaaand, go!
 	glutMainLoop();
 }
 
@@ -85,7 +94,6 @@ void SpaceGame::display()
 		renderFromCamera(active_camera);
 
 	glFlush();
-
 }
 
 void SpaceGame::mouseMove(int x, int y)
@@ -158,11 +166,21 @@ void SpaceGame::frameRefresh(int value)
 
 		// apply y, x, z rotations
 		Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
-		active_camera->local_position += camera_global_velocity * Vector3{ 1,-1,1 } *0.5 * delta_time;
+		active_camera->local_position += camera_global_velocity * Vector3{ 1,-1,1 } * delta_time;
 	}
 
-	root_object->children[1]->local_rotation.z += 30.0f * delta_time;
-	ship->local_rotation.z += 30.0f * delta_time;
+	// perform physics update for all objects
+	std::queue<Object*> physics_tick_queue;
+	physics_tick_queue.push(root_object);
+	while (!physics_tick_queue.empty())
+	{
+		Object* obj = physics_tick_queue.front();
+		physics_tick_queue.pop();
+
+		obj->performPhysicsUpdate(delta_time);
+
+		for (Object* child_obj : obj->children) physics_tick_queue.push(child_obj);
+	}
 
 	// check for errors
 	GLenum err;
@@ -186,12 +204,18 @@ void SpaceGame::frameRefresh(int value)
 	glutTimerFunc(value, glut_callback_handlers::frameRefresh, value);
 }
 
-void SpaceGame::renderFromCamera(Object* camera)
+void SpaceGame::resizeWindow(int x, int y)
+{
+	glViewport(0, 0, x, y);
+	active_camera->aspect_ratio = (float)x / (float)y;
+}
+
+void SpaceGame::renderFromCamera(CameraObject* camera)
 {
 	// if the camera supplied is null, return
 	if (!camera) return;
 
-	// compute a matrix for the camera's transform (i.e. world-to-view)
+	// compute a matrix for the camera's transform (i.e. world-to-view) TODO: take parent rotation into account
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glRotatef(camera->local_rotation.y, 0.0f, 1.0f, 0.0f);
@@ -202,13 +226,19 @@ void SpaceGame::renderFromCamera(Object* camera)
 	// set the projection matrix to be a simple perspective matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90, 1, 0.1, 100);
+	gluPerspective(camera->fov_degrees, camera->aspect_ratio, camera->near_clip, camera->far_clip);
+
+	// FIXME: huh?
+	float light_pos[4] = { 1,0,0,0 };
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+	float light_att[3] = { 1,0,0 };
+	glLightfv(GL_LIGHT0, GL_CONSTANT_ATTENUATION, light_att);
+	glLightfv(GL_LIGHT0, GL_LINEAR_ATTENUATION, light_att+1);
+	glLightfv(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, light_att+2);
 
 	// render the entire object heirarchy
 	if (root_object)
-	{
 		renderHierarchy(root_object);
-	}
 
 	// render the gizmo
 	renderAxesGizmo(camera);
@@ -230,7 +260,8 @@ void SpaceGame::renderHierarchy(Object* root)
 	glScalef(root->local_scale.x, root->local_scale.y, root->local_scale.z);
 
 	// draw root
-	drawObject(root);
+	if (root->getType() == ObjectType::MESH)
+		drawObject((MeshObject*)root);
 
 	// iterate over children, calling renderHierarchy on each
 	for (Object* child : root->children)
@@ -242,12 +273,12 @@ void SpaceGame::renderHierarchy(Object* root)
 	glPopMatrix();
 }
 
-void SpaceGame::renderAxesGizmo(Object* camera)
+void SpaceGame::renderAxesGizmo(CameraObject* camera)
 {
 	// reset the world-to-view camera stack, moving the axes to the top left of the screen
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(-0.8f, 0.8f, -0.8);
+	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8);
 	glRotatef(camera->local_rotation.y, 0.0f, 1.0f, 0.0f);
 	glRotatef(camera->local_rotation.x, 1.0f, 0.0f, 0.0f);
 	glRotatef(camera->local_rotation.z, 0.0f, 0.0f, 1.0f);
@@ -255,6 +286,10 @@ void SpaceGame::renderAxesGizmo(Object* camera)
 	// orthographic projection
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glOrtho(-camera->aspect_ratio, camera->aspect_ratio, -1, 1, -1, 1);
+
+	// disable lighting
+	glDisable(GL_LIGHTING);
 
 	// draw three lines on the three axes (coloured accordingly)
 	glBegin(GL_LINES);
@@ -272,12 +307,14 @@ void SpaceGame::renderAxesGizmo(Object* camera)
 		glVertex3f(0, 0, 0.2);
 	}
 	glEnd();
+
+	// reenable lighting
+	glEnable(GL_LIGHTING);
 }
 
-void SpaceGame::drawObject(Object* obj)
+void SpaceGame::drawObject(MeshObject* obj)
 {
 	// if the object isn't a mesh, or it's empty, or it has no triangles, give up
-	if (obj->object_type != ObjectType::MESH) return;
 	if (!obj->geometry) return;
 	if (obj->geometry->triangles == NULL || obj->geometry->vertices == NULL) return;
 
@@ -291,7 +328,10 @@ void SpaceGame::drawObject(Object* obj)
 	{
 		Vector3 vert = obj->geometry->vertices[obj->geometry->triangles[i]] * 0.5f;
 		Vector2 uv = obj->geometry->uvs[obj->geometry->triangles[i]];
-		glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
+		float col[4] = { vert.x, vert.y, vert.z, 1.0f };
+		//glColor3f(vert.x + 0.5f, vert.y + 0.5f, vert.z + 0.5f);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, col);
 		//glColor3f(uv.x, uv.y, 0.0f);
 		glVertex3f(vert.x * 0.5f, vert.y * 0.5f, vert.z * 0.5f);
 	}

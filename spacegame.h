@@ -9,8 +9,7 @@
 class SpaceGame
 {
 private:
-	Object* active_camera = NULL;
-	float camera_matrix[16] = { 0 };
+	CameraObject* active_camera = NULL;
 	Vector3 camera_local_velocity;
 
 	Object* root_object;
@@ -21,10 +20,10 @@ private:
 	int last_mouse_y = 0;
 	std::chrono::steady_clock::time_point last_frame_time;
 
-	void renderFromCamera(Object* camera);
+	void renderFromCamera(CameraObject* camera);
 	void renderHierarchy(Object* root);
-	void renderAxesGizmo(Object* camera);
-	void drawObject(Object* obj);
+	void renderAxesGizmo(CameraObject* camera);
+	void drawObject(MeshObject* obj);
 public:
 	SpaceGame(int argc, char* argv[], unsigned int x, unsigned int y);
 
@@ -35,6 +34,7 @@ public:
 	void keyDown(uint8_t key, int x, int y);
 	void keyUp(uint8_t key, int x, int y);
 	void frameRefresh(int value);
+	void resizeWindow(int x, int y);
 
 	SpaceGame() = delete;
 

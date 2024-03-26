@@ -20,4 +20,6 @@ namespace glut_callback_handlers
 	void keyUp(uint8_t key, int x, int y);
 
 	void frameRefresh(int value);
+
+	void resizeWindow(int x, int y);
 }
