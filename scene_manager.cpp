@@ -177,6 +177,11 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	// if the camera supplied is null, return
 	if (!camera) return;
 
+	// set the projection matrix to be a simple perspective matrix
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(camera->fov_degrees, camera->aspect_ratio, camera->near_clip, camera->far_clip);
+
 	// compute a matrix for the camera's transform (i.e. world-to-view)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -192,11 +197,6 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 		camera_matrix_stack = camera_matrix_stack->parent;
 	}
 
-	// set the projection matrix to be a simple perspective matrix
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(camera->fov_degrees, camera->aspect_ratio, camera->near_clip, camera->far_clip);
-
 	// do lighting stuff. does this need to be here?
 	float light_pos[4] = { 0,0,1,0 };
 	float ambient[4] = { 0.1f,0.1f,0.1f,1.0f };
@@ -209,6 +209,9 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	// render the entire object heirarchy
 	if (root_object)
 		renderHierarchy(root_object);
+
+	// render the background
+	drawEnvironmentCubemap(camera);
 
 	// render the gizmo
 	renderAxesGizmo(camera);
@@ -241,6 +244,119 @@ void SceneManager::renderHierarchy(Object* root)
 	
 	// pop matrix
 	glPopMatrix();
+}
+
+void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
+{
+	if (camera == NULL) return;
+
+	// compute a matrix for the camera's transform (i.e. world-to-view), but only its rotation
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	Object* camera_matrix_stack = camera;
+	while (camera_matrix_stack != NULL)
+	{
+		glRotatef(camera_matrix_stack->local_rotation.y, 0.0f, 1.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.x, 1.0f, 0.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.z, 0.0f, 0.0f, 1.0f);
+
+		camera_matrix_stack = camera_matrix_stack->parent;
+	}
+
+	std::cout << "render the environment properly!" << std::endl;
+	// TODO: the actual textures!
+	glDisable(GL_LIGHTING);
+	// inscribed dimension of cube
+	float inscribed = sqrt(camera->far_clip * camera->far_clip / 3.0f);
+	// +X face
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(0.0f/6.0f, 1.0f);
+		glVertex3f(inscribed, inscribed, inscribed);
+		glTexCoord2f(0.0f/6.0f, 0.0f);
+		glVertex3f(inscribed, inscribed, -inscribed);
+		glTexCoord2f(1.0f/6.0f, 0.0f);
+		glVertex3f(inscribed, -inscribed, -inscribed);
+		glTexCoord2f(1.0f / 6.0f, 1.0f);
+		glVertex3f(inscribed, -inscribed, inscribed);
+
+	}
+	glEnd();
+	// +Y face (sampling +Z of cubemap)
+	glColor3f(0.0f, 1.0f, 0.0f);
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(4.0f / 6.0f, 1.0f);
+		glVertex3f(-inscribed, inscribed, inscribed);
+		glTexCoord2f(4.0f / 6.0f, 0.0f);
+		glVertex3f(-inscribed, inscribed, -inscribed);
+		glTexCoord2f(5.0f / 6.0f, 0.0f);
+		glVertex3f(inscribed, inscribed, -inscribed);
+		glTexCoord2f(5.0f / 6.0f, 1.0f);
+		glVertex3f(inscribed, inscribed, inscribed);
+
+	}
+	glEnd();
+	// -X face
+	glColor3f(0.5f, 0.0f, 0.0f);
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(1.0f / 6.0f, 1.0f);
+		glVertex3f(-inscribed, -inscribed, inscribed);
+		glTexCoord2f(1.0f / 6.0f, 0.0f);
+		glVertex3f(-inscribed, -inscribed, -inscribed);
+		glTexCoord2f(2.0f / 6.0f, 0.0f);
+		glVertex3f(-inscribed, inscribed, -inscribed);
+		glTexCoord2f(2.0f / 6.0f, 1.0f);
+		glVertex3f(-inscribed, inscribed, inscribed);
+	}
+	glEnd();
+	// -Y face (sampling -Z of cubemap)
+	glColor3f(0.0f, 0.5f, 0.0f);
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(5.0f / 6.0f, 1.0f);
+		glVertex3f(inscribed, -inscribed, inscribed);
+		glTexCoord2f(5.0f / 6.0f, 0.0f);
+		glVertex3f(inscribed, -inscribed, -inscribed);
+		glTexCoord2f(6.0f / 6.0f, 0.0f);
+		glVertex3f(-inscribed, -inscribed, -inscribed);
+		glTexCoord2f(6.0f / 6.0f, 1.0f);
+		glVertex3f(-inscribed, -inscribed, inscribed);
+	}
+	glEnd();
+	// +Z face (sampling +Y of cubemap) FIXME: this might need rotating!
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(2.0f / 6.0f, 1.0f);
+		glVertex3f(inscribed, inscribed, inscribed);
+		glTexCoord2f(2.0f / 6.0f, 0.0f);
+		glVertex3f(inscribed, -inscribed, inscribed);
+		glTexCoord2f(3.0f / 6.0f, 0.0f);
+		glVertex3f(-inscribed, -inscribed, inscribed);
+		glTexCoord2f(3.0f / 6.0f, 1.0f);
+		glVertex3f(-inscribed, inscribed, inscribed);
+	}
+	glEnd();
+	// -Z face (sampling -Y of cubemap) FIXME: this might need rotating!
+	glColor3f(0.0f, 0.0f, 0.5f);
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(3.0f / 6.0f, 1.0f);
+		glVertex3f(-inscribed, inscribed, -inscribed);
+		glTexCoord2f(3.0f / 6.0f, 0.0f);
+		glVertex3f(-inscribed, -inscribed, -inscribed);
+		glTexCoord2f(4.0f / 6.0f, 0.0f);
+		glVertex3f(inscribed, -inscribed, -inscribed);
+		glTexCoord2f(4.0f / 6.0f, 1.0f);
+		glVertex3f(inscribed, inscribed, -inscribed);
+	}
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+
 }
 
 void SceneManager::renderAxesGizmo(CameraObject* camera)

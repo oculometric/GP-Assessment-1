@@ -23,6 +23,7 @@ private:
 	void renderFromCamera(CameraObject* camera);
 	void renderAxesGizmo(CameraObject* camera);
 	void renderHierarchy(Object* root);
+	void drawEnvironmentCubemap(CameraObject* camera);
 	void drawObject(MeshObject* obj);
 public:
 	SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game);
