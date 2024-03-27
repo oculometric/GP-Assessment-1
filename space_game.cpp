@@ -25,9 +25,10 @@ void SpaceGame::start()
 	camera_focus->addChild(cam, true);
 
 	scene_manager->skybox = new Texture();
-	scene_manager->skybox->loadPNG("nasa_goddard_gaia_dr2_deep_star_map.png");
+	scene_manager->skybox->loadBMP("nasa_goddard_gaia_dr2_deep_star_map.bmp");
 	
-	ship->geometry->material = new Material(Vector3{ 1.0f, 0.0f, 1.0f }, 0.1f);
+	ship->geometry->material = new Material(Vector3{ 1.0f, 0.0f, 1.0f }, 0.1f, new Texture());
+	ship->geometry->material->albedo->loadBMP("micacaps.bmp");
 }
 
 void SpaceGame::update(float delta_time)

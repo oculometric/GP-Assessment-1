@@ -62,6 +62,7 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	glShadeModel(GL_SMOOTH);
 	// enable textures
 	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_COLOR_MATERIAL);
 
 	game_manager = game;
 	game_manager->init(this);
@@ -265,107 +266,105 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 		camera_matrix_stack = camera_matrix_stack->parent;
 	}
 
-	// TODO: the actual textures!
-	std::cout << "render the environment properly!" << std::endl;
+	glBindTexture(GL_TEXTURE_2D, 0);
 	if (skybox)
 	{
 		if (skybox->getID() != (unsigned int)-1)
 			glBindTexture(GL_TEXTURE_2D, skybox->getID());
+		else
+			std::cout << "invalid environment texture!" << std::endl;
 	}
+	else std::cout << "no skybox texture assigned" << std::endl;
 
 	glDisable(GL_LIGHTING);
-
+	glColor3f(1.5f, 1.5f, 1.5f);
+	
 	// inscribed dimension of cube
 	float inscribed = sqrt(camera->far_clip * camera->far_clip / 3.0f);
 	// +X face
-	glColor3f(1.0f, 0.0f, 0.0f);
+	float max = 1.0f;
 	glBegin(GL_QUADS);
 	{
-		glTexCoord2f(0.0f/6.0f, 1.0f);
+		glTexCoord2f(0.0f/6.0f, max);
 		glVertex3f(inscribed, inscribed, inscribed);
 		glTexCoord2f(0.0f/6.0f, 0.0f);
 		glVertex3f(inscribed, inscribed, -inscribed);
 		glTexCoord2f(1.0f/6.0f, 0.0f);
 		glVertex3f(inscribed, -inscribed, -inscribed);
-		glTexCoord2f(1.0f / 6.0f, 1.0f);
+		glTexCoord2f(1.0f / 6.0f, max);
 		glVertex3f(inscribed, -inscribed, inscribed);
 
 	}
 	glEnd();
 	// +Y face (sampling +Z of cubemap)
-	glColor3f(0.0f, 1.0f, 0.0f);
+	//glColor3f(0.0f, 1.0f, 0.0f);
 	glBegin(GL_QUADS);
 	{
-		glTexCoord2f(4.0f / 6.0f, 1.0f);
+		glTexCoord2f(4.0f / 6.0f, max);
 		glVertex3f(-inscribed, inscribed, inscribed);
 		glTexCoord2f(4.0f / 6.0f, 0.0f);
 		glVertex3f(-inscribed, inscribed, -inscribed);
 		glTexCoord2f(5.0f / 6.0f, 0.0f);
 		glVertex3f(inscribed, inscribed, -inscribed);
-		glTexCoord2f(5.0f / 6.0f, 1.0f);
+		glTexCoord2f(5.0f / 6.0f, max);
 		glVertex3f(inscribed, inscribed, inscribed);
 
 	}
 	glEnd();
 	// -X face
-	glColor3f(0.5f, 0.0f, 0.0f);
 	glBegin(GL_QUADS);
 	{
-		glTexCoord2f(1.0f / 6.0f, 1.0f);
+		glTexCoord2f(1.0f / 6.0f, max);
 		glVertex3f(-inscribed, -inscribed, inscribed);
 		glTexCoord2f(1.0f / 6.0f, 0.0f);
 		glVertex3f(-inscribed, -inscribed, -inscribed);
 		glTexCoord2f(2.0f / 6.0f, 0.0f);
 		glVertex3f(-inscribed, inscribed, -inscribed);
-		glTexCoord2f(2.0f / 6.0f, 1.0f);
+		glTexCoord2f(2.0f / 6.0f, max);
 		glVertex3f(-inscribed, inscribed, inscribed);
 	}
 	glEnd();
 	// -Y face (sampling -Z of cubemap)
-	glColor3f(0.0f, 0.5f, 0.0f);
 	glBegin(GL_QUADS);
 	{
-		glTexCoord2f(5.0f / 6.0f, 1.0f);
+		glTexCoord2f(5.0f / 6.0f, max);
 		glVertex3f(inscribed, -inscribed, inscribed);
 		glTexCoord2f(5.0f / 6.0f, 0.0f);
 		glVertex3f(inscribed, -inscribed, -inscribed);
 		glTexCoord2f(6.0f / 6.0f, 0.0f);
 		glVertex3f(-inscribed, -inscribed, -inscribed);
-		glTexCoord2f(6.0f / 6.0f, 1.0f);
+		glTexCoord2f(6.0f / 6.0f, max);
 		glVertex3f(-inscribed, -inscribed, inscribed);
 	}
 	glEnd();
 	// +Z face (sampling +Y of cubemap) FIXME: this might need rotating!
-	glColor3f(0.0f, 0.0f, 1.0f);
 	glBegin(GL_QUADS);
 	{
-		glTexCoord2f(2.0f / 6.0f, 1.0f);
-		glVertex3f(inscribed, inscribed, inscribed);
-		glTexCoord2f(2.0f / 6.0f, 0.0f);
-		glVertex3f(inscribed, -inscribed, inscribed);
 		glTexCoord2f(3.0f / 6.0f, 0.0f);
+		glVertex3f(inscribed, inscribed, inscribed);
+		glTexCoord2f(3.0f / 6.0f, max);
+		glVertex3f(inscribed, -inscribed, inscribed);
+		glTexCoord2f(2.0f / 6.0f, max);
 		glVertex3f(-inscribed, -inscribed, inscribed);
-		glTexCoord2f(3.0f / 6.0f, 1.0f);
+		glTexCoord2f(2.0f / 6.0f, 0.0f);
 		glVertex3f(-inscribed, inscribed, inscribed);
 	}
 	glEnd();
 	// -Z face (sampling -Y of cubemap) FIXME: this might need rotating!
-	glColor3f(0.0f, 0.0f, 0.5f);
 	glBegin(GL_QUADS);
 	{
-		glTexCoord2f(3.0f / 6.0f, 1.0f);
+		glTexCoord2f(3.0f / 6.0f, max);
 		glVertex3f(-inscribed, inscribed, -inscribed);
 		glTexCoord2f(3.0f / 6.0f, 0.0f);
 		glVertex3f(-inscribed, -inscribed, -inscribed);
 		glTexCoord2f(4.0f / 6.0f, 0.0f);
 		glVertex3f(inscribed, -inscribed, -inscribed);
-		glTexCoord2f(4.0f / 6.0f, 1.0f);
+		glTexCoord2f(4.0f / 6.0f, max);
 		glVertex3f(inscribed, inscribed, -inscribed);
 	}
 	glEnd();
 
 	glEnable(GL_LIGHTING);
-
 }
 
 void SceneManager::renderAxesGizmo(CameraObject* camera)
@@ -393,6 +392,7 @@ void SceneManager::renderAxesGizmo(CameraObject* camera)
 
 	// disable lighting
 	glDisable(GL_LIGHTING);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// draw three lines on the three axes (coloured accordingly)
 	glBegin(GL_LINES);
@@ -433,6 +433,7 @@ void SceneManager::drawObject(MeshObject* obj)
 				1.0f
 			};
 			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		glMaterialf(GL_FRONT, GL_SHININESS, obj->geometry->material->shininess);
 		if (mode == MaterialMode::ALBEDO)
