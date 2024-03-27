@@ -6,9 +6,13 @@
 #include "mesh.h"
 #include "object.h"
 #include "game_manager.h"
+#include "texture.h"
 
 class SceneManager
 {
+public:
+	Texture* skybox = NULL;
+
 private:
 	CameraObject* active_camera = NULL;
 
@@ -27,6 +31,7 @@ private:
 	void drawObject(MeshObject* obj);
 public:
 	SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game);
+	SceneManager() = delete;
 
 	// callbacks, don't touch these
 
@@ -41,8 +46,6 @@ public:
 
 	inline CameraObject* getCamera() { return active_camera; }
 	void addObject(Object* obj);
-
-	SceneManager() = delete;
 
 	~SceneManager();
 };

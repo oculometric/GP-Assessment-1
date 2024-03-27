@@ -60,6 +60,8 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glShadeModel(GL_SMOOTH);
+	// enable textures
+	glEnable(GL_TEXTURE_2D);
 
 	game_manager = game;
 	game_manager->init(this);
@@ -248,7 +250,7 @@ void SceneManager::renderHierarchy(Object* root)
 
 void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 {
-	if (camera == NULL) return;
+	if (!camera) return;
 
 	// compute a matrix for the camera's transform (i.e. world-to-view), but only its rotation
 	glMatrixMode(GL_MODELVIEW);
@@ -263,9 +265,16 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 		camera_matrix_stack = camera_matrix_stack->parent;
 	}
 
-	std::cout << "render the environment properly!" << std::endl;
 	// TODO: the actual textures!
+	std::cout << "render the environment properly!" << std::endl;
+	if (skybox)
+	{
+		if (skybox->getID() != (unsigned int)-1)
+			glBindTexture(GL_TEXTURE_2D, skybox->getID());
+	}
+
 	glDisable(GL_LIGHTING);
+
 	// inscribed dimension of cube
 	float inscribed = sqrt(camera->far_clip * camera->far_clip / 3.0f);
 	// +X face
@@ -361,6 +370,8 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 
 void SceneManager::renderAxesGizmo(CameraObject* camera)
 {
+	if (!camera) return;
+
 	// reset the world-to-view camera stack, moving the axes to the top left of the screen
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -410,29 +421,39 @@ void SceneManager::drawObject(MeshObject* obj)
 	if (!obj->geometry) return;
 	if (obj->geometry->triangles == NULL || obj->geometry->vertices == NULL) return;
 
+	if (obj->geometry->material)
+	{
+		MaterialMode mode = obj->geometry->material->getMode();
+		if (mode == MaterialMode::SOLID)
+		{
+			float colour[4] = {
+				obj->geometry->material->colour.x,
+				obj->geometry->material->colour.y,
+				obj->geometry->material->colour.z,
+				1.0f
+			};
+			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
+		}
+		glMaterialf(GL_FRONT, GL_SHININESS, obj->geometry->material->shininess);
+		if (mode == MaterialMode::ALBEDO)
+			glBindTexture(GL_TEXTURE_2D, obj->geometry->material->albedo->getID());
+	}
+
 	// fill from front, draw as lines from back
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_LINE);
-
-	float col[4] = { 0,0,0,0 };
-	col[0] = (float)obj->name[0] / 255.0f;
-	col[1] = (float)obj->name[1] / 255.0f;
-	col[2] = (float)obj->name[2] / 255.0f;
 
 	// draw triangle mesh
 	glBegin(GL_TRIANGLES);
 	for (uint32_t i = 0; i < obj->geometry->trisCount(); i++)
 	{
-		Vector3 vert = obj->geometry->vertices[obj->geometry->triangles[i]] * 0.5f;
+		Vector3 vert = obj->geometry->vertices[obj->geometry->triangles[i]];
 		Vector3 normal = obj->geometry->vertex_normals[i];
-		normal = norm(normal);
 		Vector2 uv = obj->geometry->uvs[i];
-		float col[4] = { normal.x, normal.y, normal.z, 1.0f };
-		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col);
 
 		glTexCoord2f(uv.x, uv.y);
 		glNormal3f(normal.x, normal.y, normal.z);
-		glVertex3f(vert.x * 0.5f, vert.y * 0.5f, vert.z * 0.5f);
+		glVertex3f(vert.x, vert.y, vert.z);
 	}
 	glEnd();
 }

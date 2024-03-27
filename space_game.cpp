@@ -20,17 +20,20 @@ void SpaceGame::start()
 	CameraObject* cam = scene_manager->getCamera();
 	cam->removeFromParent(true);
 
-	cam->local_position = Vector3{ 0,0,3 };
+	cam->local_position = Vector3{ 0,0,12 };
 	cam->local_rotation = Vector3{ 180.0f,180.0f,180.0f };
 	camera_focus->addChild(cam, true);
 
-	ShowCursor(false);
+	scene_manager->skybox = new Texture();
+	scene_manager->skybox->loadPNG("nasa_goddard_gaia_dr2_deep_star_map.png");
+	
+	ship->geometry->material = new Material(Vector3{ 1.0f, 0.0f, 1.0f }, 0.1f);
 }
 
 void SpaceGame::update(float delta_time)
 {
 	// handle camera movement
-	Vector3 angle = scene_manager->getCamera()->local_rotation * (M_PI / 180.0f);
+	Vector3 angle = scene_manager->getCamera()->local_rotation * ((float)M_PI / 180.0f);
 	Matrix3 rot_x = { 1,  0,             0,
 						0,  cos(angle.x), -sin(angle.x),
 						0,  sin(angle.x),  cos(angle.x) };
@@ -57,9 +60,10 @@ void SpaceGame::mouseMove(int delta_x, int delta_y, bool down)
 
 void SpaceGame::keyPressed(unsigned char key, bool down)
 {
-	float up_down = down ? 1.0f : -1.0f;
-	if (key == 'w') camera_local_velocity.z += -1.0f * up_down;
-	if (key == 's') camera_local_velocity.z += 1.0f * up_down;
+	float sensitivity = 8.0f;
+	float up_down = down ? sensitivity : -sensitivity;
+	if (key == 'w' || key == 'W') camera_local_velocity.z += -up_down;
+	if (key == 's' || key == 'S') camera_local_velocity.z += up_down;
 	/*if (key == 'a') camera_local_velocity.x += -1.0f * up_down;
 	if (key == 'd') camera_local_velocity.x += 1.0f * up_down;
 	if (key == 'q') camera_local_velocity.y += -1.0f * up_down;

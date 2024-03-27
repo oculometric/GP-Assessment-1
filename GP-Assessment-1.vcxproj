@@ -130,14 +130,17 @@
     <ClCompile Include="game_manager.cpp" />
     <ClCompile Include="glut_callback_handlers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="material.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="scene_manager.cpp" />
     <ClCompile Include="space_game.cpp" />
+    <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game_manager.h" />
     <ClInclude Include="glut_callback_handlers.h" />
+    <ClInclude Include="material.h" />
     <ClInclude Include="matrix3.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="object.h" />

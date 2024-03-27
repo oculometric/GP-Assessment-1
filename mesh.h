@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "vector3.h"
 #include "vector2.h"
+#include "material.h"
 
 class Mesh
 {
@@ -11,6 +12,8 @@ public:
 	uint32_t* triangles;		// three per triangle
 	Vector2* uvs;				// three per triangle
 	Vector3* vertex_normals;	// three per triangle
+
+	Material* material;
 
 private:
 	uint32_t num_verts = 0;		// length of the vertices array
