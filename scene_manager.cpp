@@ -24,6 +24,9 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 
 	last_frame_time = std::chrono::high_resolution_clock::now();
 
+	viewport_width = x;
+	viewport_height = y;
+
 	srand((unsigned int)last_frame_time.time_since_epoch().count());
 
 	// core scene initialisation
@@ -79,7 +82,10 @@ void SceneManager::display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (active_camera)
+	{
 		renderFromCamera(active_camera);
+		performPostProcessing(active_camera);
+	}
 
 	glFlush();
 }
@@ -166,12 +172,20 @@ void SceneManager::frameRefresh(int value)
 void SceneManager::resizeWindow(int x, int y)
 {
 	glViewport(0, 0, x, y);
+	viewport_width = x;
+	viewport_height = y;
+	if (post_processing_buffer)
+	{
+		delete[] post_processing_buffer;
+		post_processing_buffer = NULL;
+	}
 	active_camera->aspect_ratio = (float)x / (float)y;
 }
 
 void SceneManager::addObject(Object* obj)
 {
-	// TODO: add lots of NULL-checks
+	if (!obj) return;
+
 	root_object->addChild(obj, true);
 }
 
@@ -179,6 +193,8 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 {
 	// if the camera supplied is null, return
 	if (!camera) return;
+
+	glFogf(GL_FOG_END, camera->far_clip);
 
 	// set the projection matrix to be a simple perspective matrix
 	glMatrixMode(GL_PROJECTION);
@@ -200,7 +216,7 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 		camera_matrix_stack = camera_matrix_stack->parent;
 	}
 
-	// do lighting stuff. does this need to be here?
+	// do lighting stuff. does this need to be here? TODO: proper lighting
 	float light_pos[4] = { 0,0,1,0 };
 	float ambient[4] = { 0.1f,0.1f,0.1f,1.0f };
 	float diffuse[4] = { 4.0f,3.8f,3.6f,1.0f };
@@ -217,7 +233,7 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	drawEnvironmentCubemap(camera);
 
 	// render the gizmo
-	renderAxesGizmo(camera);
+	drawAxesGizmo(camera);
 }
 
 void SceneManager::renderHierarchy(Object* root)
@@ -277,6 +293,7 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 	else std::cout << "no skybox texture assigned" << std::endl;
 
 	glDisable(GL_LIGHTING);
+	glDisable(GL_FOG);
 	glColor3f(1.5f, 1.5f, 1.5f);
 	
 	// inscribed dimension of cube
@@ -365,9 +382,10 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 	glEnd();
 
 	glEnable(GL_LIGHTING);
+	glEnable(GL_FOG);
 }
 
-void SceneManager::renderAxesGizmo(CameraObject* camera)
+void SceneManager::drawAxesGizmo(CameraObject* camera)
 {
 	if (!camera) return;
 
@@ -392,6 +410,7 @@ void SceneManager::renderAxesGizmo(CameraObject* camera)
 
 	// disable lighting
 	glDisable(GL_LIGHTING);
+	glDisable(GL_FOG);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// draw three lines on the three axes (coloured accordingly)
@@ -413,6 +432,7 @@ void SceneManager::renderAxesGizmo(CameraObject* camera)
 
 	// reenable lighting
 	glEnable(GL_LIGHTING);
+	glEnable(GL_FOG);
 }
 
 void SceneManager::drawObject(MeshObject* obj)
@@ -459,6 +479,52 @@ void SceneManager::drawObject(MeshObject* obj)
 	glEnd();
 }
 
+void SceneManager::performPostProcessing(CameraObject* camera)
+{
+	// if camera is invalid, skip
+	if (!camera) return;
+	// if the post processing buffer doesn't exist, create it
+	if (!post_processing_buffer)
+		post_processing_buffer = new uint32_t[viewport_width * viewport_height * sizeof(float)];
+
+	// read pixels out of the framebuffer
+	glReadPixels(0, 0, viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
+
+	Vector2 viewport_divisor = Vector2{ 2.0f / (float)viewport_width, 2.0f / (float)viewport_height };
+
+	// loop over pixels
+	Vector2 uv = { -1.0f, -1.0f };
+	unsigned int buffer_index = 0;
+	Vector3 in_colour;
+	for (int y = 0; y < viewport_height; y++)
+	{
+		for (int x = 0; x < viewport_width; x++)
+		{
+			// calculate useful stuff, grab data
+			in_colour = *((Vector3*)(post_processing_buffer + buffer_index));
+
+			// actual post-processing code
+			in_colour *= 1.0f - (((uv.x * uv.x) + (uv.y * uv.y)) * 0.5f); // vignette
+			in_colour *= 0.97f; // gain
+			in_colour += Vector3{ 0.06f, 0.05f, 0.065f }; // lift
+
+			in_colour = rgb_to_hsv(in_colour); // saturate
+			in_colour.y *= 1.1f;
+			in_colour = hsv_to_rgb(in_colour);
+
+			// set back to buffer
+			*((Vector3*)(post_processing_buffer + buffer_index)) = in_colour;
+
+			buffer_index += 4;
+			uv.x += viewport_divisor.x;
+		}
+		uv.x = -1.0f;
+		uv.y += viewport_divisor.y;
+	}
+
+	// write pixels back to the framebuffer
+	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
+}
 
 SceneManager::~SceneManager()
 { }

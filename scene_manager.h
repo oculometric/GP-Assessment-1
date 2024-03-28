@@ -24,11 +24,16 @@ private:
 	int last_mouse_y = 0;
 	std::chrono::steady_clock::time_point last_frame_time;
 
+	uint32_t* post_processing_buffer = NULL;
+	int viewport_width = 0;
+	int viewport_height = 0;
+
 	void renderFromCamera(CameraObject* camera);
-	void renderAxesGizmo(CameraObject* camera);
+	void drawAxesGizmo(CameraObject* camera);
 	void renderHierarchy(Object* root);
 	void drawEnvironmentCubemap(CameraObject* camera);
 	void drawObject(MeshObject* obj);
+	void performPostProcessing(CameraObject* camera);
 public:
 	SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game);
 	SceneManager() = delete;

@@ -17,6 +17,8 @@ void SpaceGame::start()
 	scene_manager->addObject(ship);
 
 	camera_focus = new Object();
+	camera_focus->local_position = Vector3{ 0.0f, -4.4f, 2.6f };
+	camera_focus->local_rotation.x = 180.0f;
 	ship->addChild(camera_focus, true);
 
 	CameraObject* cam = scene_manager->getCamera();
@@ -24,7 +26,16 @@ void SpaceGame::start()
 
 	cam->local_position = Vector3{ 0,0,12 };
 	cam->local_rotation = Vector3{ 180.0f,180.0f,180.0f };
+	cam->far_clip = 300.0f;
 	camera_focus->addChild(cam, true);
+
+	// enable fog
+	glEnable(GL_FOG);
+	glFogi(GL_FOG_MODE, GL_LINEAR);
+	glFogf(GL_FOG_START, 3.0f);
+	float fog_colour[4] = { 0.05f, 0.05f, 0.08f, 1.0f };
+	glFogfv(GL_FOG_COLOR, fog_colour);
+	glFogf(GL_FOG_DENSITY, 0.4f);
 
 	scene_manager->skybox = new Texture();
 	scene_manager->skybox->loadBMP("nasa_goddard_gaia_dr2_deep_star_map.bmp");
