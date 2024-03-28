@@ -10,8 +10,10 @@
 
 void SpaceGame::start()
 {
-	ship = new MeshObject(new Mesh("beholder_v3.obj"));
+	ship = new MeshObject(new Mesh("beholder_v4.obj"));
 	ship->name = "spaceship";
+	ship->geometry->material = new Material(Vector3{ 1.0f, 0.0f, 1.0f }, 0.1f, new Texture());
+	ship->geometry->material->albedo->loadBMP("beholder_v4_t.bmp");
 	scene_manager->addObject(ship);
 
 	camera_focus = new Object();
@@ -27,8 +29,6 @@ void SpaceGame::start()
 	scene_manager->skybox = new Texture();
 	scene_manager->skybox->loadBMP("nasa_goddard_gaia_dr2_deep_star_map.bmp");
 	
-	ship->geometry->material = new Material(Vector3{ 1.0f, 0.0f, 1.0f }, 0.1f, new Texture());
-	ship->geometry->material->albedo->loadBMP("micacaps.bmp");
 }
 
 void SpaceGame::update(float delta_time)
