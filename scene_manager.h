@@ -24,7 +24,7 @@ private:
 	int last_mouse_y = 0;
 	std::chrono::steady_clock::time_point last_frame_time;
 
-	uint32_t* post_processing_buffer = NULL;
+	float* post_processing_buffer = NULL;
 	int viewport_width = 0;
 	int viewport_height = 0;
 

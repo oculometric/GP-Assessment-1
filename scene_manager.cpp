@@ -481,11 +481,12 @@ void SceneManager::drawObject(MeshObject* obj)
 
 void SceneManager::performPostProcessing(CameraObject* camera)
 {
+	return;		// so drawpixels isn't supported on all graphics cards. which makes custom post-processing in OpenGL 1.x, actually, fully, impossible. :((((
 	// if camera is invalid, skip
 	if (!camera) return;
 	// if the post processing buffer doesn't exist, create it
 	if (!post_processing_buffer)
-		post_processing_buffer = new uint32_t[viewport_width * viewport_height * sizeof(float)];
+		post_processing_buffer = new float[viewport_width * viewport_height * 4];
 
 	// read pixels out of the framebuffer
 	glReadPixels(0, 0, viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
@@ -508,9 +509,9 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 			in_colour *= 0.97f; // gain
 			in_colour += Vector3{ 0.06f, 0.05f, 0.065f }; // lift
 
-			in_colour = rgb_to_hsv(in_colour); // saturate
-			in_colour.y *= 1.1f;
-			in_colour = hsv_to_rgb(in_colour);
+			//in_colour = rgb_to_hsv(in_colour); // saturate
+			//in_colour.y *= 1.1f;
+			//in_colour = hsv_to_rgb(in_colour);
 
 			// set back to buffer
 			*((Vector3*)(post_processing_buffer + buffer_index)) = in_colour;
