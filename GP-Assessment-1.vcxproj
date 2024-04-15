@@ -133,6 +133,7 @@
     <ClCompile Include="material.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="object.cpp" />
+    <ClCompile Include="point_generator.cpp" />
     <ClCompile Include="scene_manager.cpp" />
     <ClCompile Include="space_game.cpp" />
     <ClCompile Include="texture.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="matrix3.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="object.h" />
+    <ClInclude Include="point_generator.h" />
     <ClInclude Include="scene_manager.h" />
     <ClInclude Include="space_game.h" />
     <ClInclude Include="texture.h" />
