@@ -18,6 +18,8 @@ private:
 	std::vector<MeshObject*> loaded_asteroids;
 	Mesh* asteroid_mesh;
 
+	float acceleration = 0.0f;
+
 public:
 	void start() override;
 	void update(float delta_time) override;

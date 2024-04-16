@@ -94,6 +94,9 @@ void SpaceGame::update(float delta_time)
 	Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
 	scene_manager->getCamera()->local_position += camera_global_velocity * Vector3{1,-1,1} * delta_time;
 
+	// handle acceleration
+	ship->velocity_lin.z += acceleration * delta_time;
+
 	// create/destroy asteroids
 	// TODO:
 }
@@ -109,8 +112,10 @@ void SpaceGame::keyPressed(unsigned char key, bool down)
 {
 	float sensitivity = 8.0f;
 	float up_down = down ? sensitivity : -sensitivity;
-	if (key == 'w' || key == 'W') camera_local_velocity.z += -up_down;
-	if (key == 's' || key == 'S') camera_local_velocity.z += up_down;
+	if (key == 'e') acceleration += up_down;
+	if (key == 'q') acceleration -= up_down;
+	//if (key == 'w' || key == 'W') camera_local_velocity.z += -up_down;
+	//if (key == 's' || key == 'S') camera_local_velocity.z += up_down;
 	/*if (key == 'a') camera_local_velocity.x += -1.0f * up_down;
 	if (key == 'd') camera_local_velocity.x += 1.0f * up_down;
 	if (key == 'q') camera_local_velocity.y += -1.0f * up_down;
