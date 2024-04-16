@@ -41,10 +41,14 @@ Mesh::Mesh(uint32_t verts_capacity, uint32_t tris_capacity)
 
     uvs = new Vector2[num_tris];
     vertex_normals = new Vector3[num_tris];
+    
+    material = NULL;
 }
 
 Mesh::Mesh(std::string path)
 {
+    material = NULL;
+
     std::ifstream file;
     file.open(path);
     if (!file.is_open()) throw new std::exception("unable to open file");

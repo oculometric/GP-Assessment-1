@@ -193,8 +193,6 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	// if the camera supplied is null, return
 	if (!camera) return;
 
-	glFogf(GL_FOG_END, camera->far_clip);
-
 	// set the projection matrix to be a simple perspective matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -290,7 +288,7 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 	glColor3f(1.5f, 1.5f, 1.5f);
 	
 	// inscribed dimension of cube
-	float inscribed = sqrt(camera->far_clip * camera->far_clip / 3.0f);
+	float inscribed = camera->far_clip / sqrt(3.0f);
 	// +X face
 	float max = 1.0f;
 	glBegin(GL_QUADS);

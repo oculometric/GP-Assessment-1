@@ -13,7 +13,7 @@ public:
 	Vector2* uvs;				// three per triangle
 	Vector3* vertex_normals;	// three per triangle
 
-	Material* material;
+	Material* material = NULL;
 
 private:
 	uint32_t num_verts = 0;		// length of the vertices array
