@@ -87,3 +87,27 @@ CameraObject::CameraObject(float _fov_degrees, float near, float far, float aspe
 	local_rotation = rotation;
 	local_scale = scale;
 }
+
+ObjectType LightObject::getType()
+{
+	return ObjectType::LIGHT;
+}
+
+LightObject::LightObject(LightType _type, Vector3 colour, Vector3 position, Vector3 _direction)
+{
+	type = _type;
+	diffuse_colour = colour;
+	specular_colour = colour;
+	ambient_colour = colour;
+	direction = _direction;
+	local_position = position;
+	enabled = true;
+
+	parent = NULL;
+	local_position = position;
+}
+
+LightObject::LightObject()
+{
+	parent = NULL;
+}

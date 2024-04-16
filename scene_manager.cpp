@@ -59,9 +59,8 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	glCullFace(GL_BACK);
 	// counter-clockwise winding
 	glFrontFace(GL_CCW);
-	// enable lighting
+	// enable smooth lighting
 	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
 	glShadeModel(GL_SMOOTH);
 	// enable textures
 	glEnable(GL_TEXTURE_2D);
@@ -215,15 +214,9 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 		
 		camera_matrix_stack = camera_matrix_stack->parent;
 	}
-
-	// do lighting stuff. does this need to be here? TODO: proper lighting
-	float light_pos[4] = { 0,0,1,0 };
-	float ambient[4] = { 0.1f,0.1f,0.1f,1.0f };
-	float diffuse[4] = { 4.0f,3.8f,3.6f,1.0f };
-
-	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	
+	// configure lights
+	updateLights();
 
 	// render the entire object heirarchy
 	if (root_object)
@@ -457,7 +450,27 @@ void SceneManager::drawObject(MeshObject* obj)
 		}
 		glMaterialf(GL_FRONT, GL_SHININESS, obj->geometry->material->shininess);
 		if (mode == MaterialMode::ALBEDO)
+		{
 			glBindTexture(GL_TEXTURE_2D, obj->geometry->material->albedo->getID());
+			float colour[4] = {
+				1.0f,
+				1.0f,
+				1.0f,
+				1.0f
+			};
+			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
+		}
+	}
+	else
+	{
+		float colour[4] = {
+				0.8f,
+				0.8f,
+				0.8f,
+				1.0f
+		};
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	// fill from front, draw as lines from back
@@ -525,6 +538,59 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 
 	// write pixels back to the framebuffer
 	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
+}
+
+void SceneManager::updateLights()
+{
+	for (int light_index = 0; light_index < 8; light_index++)
+	{
+		GLenum light = GL_LIGHT0 + light_index;
+		if (!lights[light_index].enabled)
+		{
+			glDisable(light);
+			continue;
+		}
+		glEnable(light);
+
+		float tmp_col[4] = { 0.0f };
+		tmp_col[0] = lights[light_index].diffuse_colour.x;
+		tmp_col[1] = lights[light_index].diffuse_colour.y;
+		tmp_col[2] = lights[light_index].diffuse_colour.z;
+		tmp_col[3] = 1.0f;
+		glLightfv(light, GL_DIFFUSE, tmp_col);
+		tmp_col[0] = lights[light_index].specular_colour.x;
+		tmp_col[1] = lights[light_index].specular_colour.y;
+		tmp_col[2] = lights[light_index].specular_colour.z;
+		glLightfv(light, GL_SPECULAR, tmp_col);
+		tmp_col[0] = lights[light_index].ambient_colour.x;
+		tmp_col[1] = lights[light_index].ambient_colour.y;
+		tmp_col[2] = lights[light_index].ambient_colour.z;
+		glLightfv(light, GL_SPECULAR, tmp_col);
+
+		if (lights[light_index].type == LightType::DIRECTIONAL)
+		{
+			tmp_col[0] = -lights[light_index].direction.x;
+			tmp_col[1] = -lights[light_index].direction.y;
+			tmp_col[2] = -lights[light_index].direction.z;
+			tmp_col[3] = 0.0f;
+			glLightfv(light, GL_POSITION, tmp_col);
+			continue;
+		}
+
+		tmp_col[0] = lights[light_index].local_position.x;
+		tmp_col[1] = lights[light_index].local_position.y;
+		tmp_col[2] = lights[light_index].local_position.z;
+		glLightfv(light, GL_POSITION, tmp_col);
+		tmp_col[0] = lights[light_index].direction.x;
+		tmp_col[1] = lights[light_index].direction.y;
+		tmp_col[2] = lights[light_index].direction.z;
+		glLightfv(light, GL_SPOT_DIRECTION, tmp_col);
+		glLightf(light, GL_SPOT_CUTOFF, lights[light_index].spot_angle);
+		glLightf(light, GL_SPOT_EXPONENT, lights[light_index].spot_exponent);
+		glLightf(light, GL_CONSTANT_ATTENUATION, lights[light_index].attenuation_constant);
+		glLightf(light, GL_LINEAR_ATTENUATION, lights[light_index].attenuation_linear);
+		glLightf(light, GL_QUADRATIC_ATTENUATION, lights[light_index].attenuation_quadratic);
+	}
 }
 
 SceneManager::~SceneManager()

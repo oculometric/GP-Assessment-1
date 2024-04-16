@@ -16,9 +16,11 @@ public:
 private:
 	CameraObject* active_camera = NULL;
 
-	Object* root_object;
+	Object* root_object = NULL;
 
-	GameManager* game_manager;
+	GameManager* game_manager = NULL;
+
+	LightObject lights[8];
 
 	int last_mouse_x = 0;
 	int last_mouse_y = 0;
@@ -34,6 +36,7 @@ private:
 	void drawEnvironmentCubemap(CameraObject* camera);
 	void drawObject(MeshObject* obj);
 	void performPostProcessing(CameraObject* camera);
+	void updateLights();
 public:
 	SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game);
 	SceneManager() = delete;
@@ -51,6 +54,7 @@ public:
 
 	inline CameraObject* getCamera() { return active_camera; }
 	void addObject(Object* obj);
+	inline LightObject* getLight(unsigned char index) { if (index >= 8) return NULL; else return lights + index; }
 
 	~SceneManager();
 };
