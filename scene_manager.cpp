@@ -65,6 +65,8 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	// enable textures
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_COLOR_MATERIAL);
+	// enable normalisation, since we're scaling objects
+	glEnable(GL_NORMALIZE);
 
 	game_manager = game;
 	game_manager->init(this);
@@ -470,6 +472,14 @@ void SceneManager::drawObject(MeshObject* obj)
 		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+	float colour[4] = {
+				0.0f,
+				0.0f,
+				0.0f,
+				1.0f
+	};
+	glMaterialfv(GL_FRONT, GL_EMISSION, colour);
 
 	// fill from front, draw as lines from back
 	glPolygonMode(GL_FRONT, GL_FILL);
