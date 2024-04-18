@@ -16,7 +16,8 @@ public:
 private:
 	CameraObject* active_camera = NULL;
 
-	Object* root_object = NULL;
+	Object* world_root = NULL;
+	Object* overlay_root = NULL;
 
 	GameManager* game_manager = NULL;
 
@@ -31,7 +32,7 @@ private:
 	int viewport_height = 0;
 
 	void renderFromCamera(CameraObject* camera);
-	void drawAxesGizmo(CameraObject* camera);
+	void drawOverlay(CameraObject* camera);
 	void renderHierarchy(Object* root);
 	void drawEnvironmentCubemap(CameraObject* camera);
 	void drawObject(MeshObject* obj);
@@ -54,6 +55,7 @@ public:
 
 	inline CameraObject* getCamera() { return active_camera; }
 	void addObject(Object* obj);
+	void addOverlayObject(Object* obj);
 	inline LightObject* getLight(unsigned char index) { if (index >= 8) return NULL; else return lights + index; }
 
 	~SceneManager();

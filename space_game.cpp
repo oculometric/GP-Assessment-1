@@ -9,8 +9,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#define ASTEROID_DENSITY 0.00003f
-#define ASTEROID_MAP_SIZE 300
+#define ASTEROID_DENSITY 0.002f
+#define ASTEROID_MAP_SIZE 100
 #define ASTEROID_MAP_RADIUS ASTEROID_MAP_SIZE / 2
 #define NUM_ASTEROIDS (size_t)(ASTEROID_MAP_SIZE * ASTEROID_MAP_SIZE * ASTEROID_MAP_SIZE * ASTEROID_DENSITY)
 
@@ -79,7 +79,7 @@ void SpaceGame::start()
 
 	for (int a = 0; a < NUM_ASTEROIDS; a++)
 	{
-		MeshObject* new_asteroid = new MeshObject(asteroid_mesh, asteroid_points[a]);
+		MeshObject* new_asteroid = new MeshObject(asteroid_mesh, asteroid_points[a] * 10);
 		loaded_asteroids.push_back(new_asteroid);
 		scene_manager->addObject(new_asteroid);
 		new_asteroid->velocity_ang = Vector3{ randf() * 20.0f, randf() * 20.0f, randf() * 20.0f };
@@ -89,6 +89,9 @@ void SpaceGame::start()
 		new_asteroid->local_scale = Vector3{ scale_x, scale_x * scale_xy, scale_x * scale_xz };
 		new_asteroid->velocity_lin = Vector3{ randf() * 0.2f, randf() * 0.2f, randf() * 0.2f };
 	}
+
+	MeshObject* overlay_ship = new MeshObject(ship->geometry, Vector3{ 0.5f, 0.5f, 0.0f }, Vector3{ 90.0f, 0.0f, 0.0f }, Vector3{ 0.05f, 0.05f, 0.05f });
+	scene_manager->addOverlayObject(overlay_ship);
 }
 
 void SpaceGame::update(float delta_time)

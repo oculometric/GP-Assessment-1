@@ -30,10 +30,13 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	srand((unsigned int)last_frame_time.time_since_epoch().count());
 
 	// core scene initialisation
-	root_object = new Object();
-	root_object->name = "root";
+	world_root = new Object();
+	world_root->name = "root";
 	active_camera = new CameraObject(90.0f, 0.01f, 64.0f, (float)x/(float)y, Vector3{ 0,-1,1 }, Vector3{ -23.0f,0,0 });
-	root_object->addChild(active_camera, true);
+	world_root->addChild(active_camera, true);
+
+	overlay_root = new Object();
+	overlay_root->name = "overlay";
 
 	// GLUT and GL initialisation
 	glutInit(&argc, argv);
@@ -137,7 +140,7 @@ void SceneManager::frameRefresh(int value)
 
 	// perform physics update for all objects
 	std::queue<Object*> physics_tick_queue;
-	physics_tick_queue.push(root_object);
+	physics_tick_queue.push(world_root);
 	while (!physics_tick_queue.empty())
 	{
 		Object* obj = physics_tick_queue.front();
@@ -187,7 +190,7 @@ void SceneManager::addObject(Object* obj)
 {
 	if (!obj) return;
 
-	root_object->addChild(obj, true);
+	world_root->addChild(obj, true);
 }
 
 void SceneManager::renderFromCamera(CameraObject* camera)
@@ -219,14 +222,14 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	updateLights();
 
 	// render the entire object heirarchy
-	if (root_object)
-		renderHierarchy(root_object);
+	if (world_root)
+		renderHierarchy(world_root);
 
 	// render the background
 	drawEnvironmentCubemap(camera);
 
 	// render the gizmo
-	drawAxesGizmo(camera);
+	drawOverlay(camera);
 }
 
 void SceneManager::renderHierarchy(Object* root)
@@ -378,23 +381,13 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 	glEnable(GL_FOG);
 }
 
-void SceneManager::drawAxesGizmo(CameraObject* camera)
+void SceneManager::drawOverlay(CameraObject* camera)
 {
 	if (!camera) return;
 
 	// reset the world-to-view camera stack, moving the axes to the top left of the screen
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8f);
-	Object* camera_matrix_stack = camera;
-	while (camera_matrix_stack != NULL)
-	{
-		glRotatef(camera_matrix_stack->local_rotation.y, 0.0f, 1.0f, 0.0f);
-		glRotatef(camera_matrix_stack->local_rotation.x, 1.0f, 0.0f, 0.0f);
-		glRotatef(camera_matrix_stack->local_rotation.z, 0.0f, 0.0f, 1.0f);
-
-		camera_matrix_stack = camera_matrix_stack->parent;
-	}
 
 	// orthographic projection
 	glMatrixMode(GL_PROJECTION);
@@ -407,6 +400,45 @@ void SceneManager::drawAxesGizmo(CameraObject* camera)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// draw three lines on the three axes (coloured accordingly)
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	glMatrixMode(GL_MODELVIEW);
+	for (Object* child_object : overlay_root->children)
+	{
+		if (child_object->getType() != ObjectType::MESH) continue;
+		glPushMatrix();
+		glTranslatef(child_object->local_position.x * camera->aspect_ratio, child_object->local_position.y, 0);
+		glRotatef(-child_object->local_rotation.z, 0.0f, 0.0f, 1.0f);
+		glRotatef(-child_object->local_rotation.x, 1.0f, 0.0f, 0.0f);
+		glRotatef(-child_object->local_rotation.y, 0.0f, 1.0f, 0.0f);
+		glScalef(child_object->local_scale.x, child_object->local_scale.y, child_object->local_scale.z);
+		MeshObject* child_mesh_object = (MeshObject*)child_object;
+		glColor3f(0.2f, 0.9f, 0.1f);
+		glBegin(GL_LINES);
+		{
+			for (int i = 0; i < child_mesh_object->geometry->trisCount() - 1; i++)
+			{
+				Vector3 vert_a = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i]];
+				Vector3 vert_b = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i+1]];
+				glVertex3f(vert_a.x, vert_a.y, vert_a.z);
+				glVertex3f(vert_b.x, vert_b.y, vert_b.z);
+			}
+		}
+		glEnd();
+		glPopMatrix();
+	}
+
+	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8f);
+	Object* camera_matrix_stack = camera;
+	while (camera_matrix_stack != NULL)
+	{
+		glRotatef(camera_matrix_stack->local_rotation.y, 0.0f, 1.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.x, 1.0f, 0.0f, 0.0f);
+		glRotatef(camera_matrix_stack->local_rotation.z, 0.0f, 0.0f, 1.0f);
+
+		camera_matrix_stack = camera_matrix_stack->parent;
+	}
+
 	glBegin(GL_LINES);
 	{
 		glColor3f(1, 0, 0);
@@ -603,3 +635,10 @@ void SceneManager::updateLights()
 
 SceneManager::~SceneManager()
 { }
+
+void SceneManager::addOverlayObject(Object* obj)
+{
+	if (!obj) return;
+
+	overlay_root->addChild(obj, true);
+}
