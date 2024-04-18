@@ -150,6 +150,11 @@ void SceneManager::frameRefresh(int value)
 
 		for (Object* child_obj : obj->children) physics_tick_queue.push(child_obj);
 	}
+	// and all overlay objects
+	for (Object* obj : overlay_root->children)
+	{
+		obj->performPhysicsUpdate(delta_time);
+	}
 
 	// check for errors
 	GLenum err;

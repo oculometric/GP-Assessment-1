@@ -90,8 +90,17 @@ void SpaceGame::start()
 		new_asteroid->velocity_lin = Vector3{ randf() * 0.2f, randf() * 0.2f, randf() * 0.2f };
 	}
 
-	MeshObject* overlay_ship = new MeshObject(ship->geometry, Vector3{ 0.5f, 0.5f, 0.0f }, Vector3{ 90.0f, 0.0f, 0.0f }, Vector3{ 0.05f, 0.05f, 0.05f });
+	MeshObject* overlay_ship = new MeshObject(ship->geometry, Vector3{ 0.8f, 0.8f, 0.0f }, Vector3{ 90.0f, 0.0f, 0.0f }, Vector3{ 0.03f, 0.03f, 0.03f });
+	MeshObject* spinning_ico_0 = new MeshObject(new Mesh("icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
+	MeshObject* spinning_ico_1 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.6f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
+	MeshObject* spinning_ico_2 = new MeshObject(spinning_ico_1->geometry, Vector3{ -0.4f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
+	spinning_ico_0->velocity_ang = Vector3{ 20.0f, 180.0f, 10.0f };
+	spinning_ico_1->velocity_ang = Vector3{ 200.0f, 10.0f, 40.0f };
+	spinning_ico_2->velocity_ang = Vector3{ 10.0f, 30.0f, 130.0f };
 	scene_manager->addOverlayObject(overlay_ship);
+	scene_manager->addOverlayObject(spinning_ico_0);
+	scene_manager->addOverlayObject(spinning_ico_1);
+	scene_manager->addOverlayObject(spinning_ico_2);
 }
 
 void SpaceGame::update(float delta_time)
