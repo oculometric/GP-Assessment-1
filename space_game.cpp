@@ -164,4 +164,5 @@ void SpaceGame::keyPressed(unsigned char key, bool down)
 	if (key == 's' || key == 'S') ship->velocity_ang.x -= up_down * 10.0f;
 	if (key == 'a' || key == 'A') ship->velocity_ang.z += up_down * 10.0f;
 	if (key == 'd' || key == 'D') ship->velocity_ang.z -= up_down * 10.0f;
+	if (key == ' ' && !down) ship->velocity_lin = Vector3{ 0,0,0 };
 }
