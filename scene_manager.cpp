@@ -476,6 +476,7 @@ void SceneManager::drawObject(MeshObject* obj)
 		MaterialMode mode = obj->geometry->material->getMode();
 		if (mode == MaterialMode::SOLID)
 		{
+			// solid colour material
 			float colour[4] = {
 				obj->geometry->material->colour.x,
 				obj->geometry->material->colour.y,
@@ -488,34 +489,22 @@ void SceneManager::drawObject(MeshObject* obj)
 		glMaterialf(GL_FRONT, GL_SHININESS, obj->geometry->material->shininess);
 		if (mode == MaterialMode::ALBEDO)
 		{
+			// textured material
 			glBindTexture(GL_TEXTURE_2D, obj->geometry->material->albedo->getID());
-			float colour[4] = {
-				1.0f,
-				1.0f,
-				1.0f,
-				1.0f
-			};
+			float colour[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
 		}
 	}
 	else
 	{
-		float colour[4] = {
-				0.8f,
-				0.8f,
-				0.8f,
-				1.0f
-		};
+		// no material, plain 0.8 value solid material
+		float colour[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
 		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	float colour[4] = {
-				0.0f,
-				0.0f,
-				0.0f,
-				1.0f
-	};
+	// clear emission
+	float colour[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	glMaterialfv(GL_FRONT, GL_EMISSION, colour);
 
 	// fill from front, draw as lines from back
