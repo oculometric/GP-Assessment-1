@@ -94,6 +94,10 @@ void SpaceGame::start()
 	MeshObject* spinning_ico_0 = new MeshObject(new Mesh("icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	MeshObject* spinning_ico_1 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.6f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	MeshObject* spinning_ico_2 = new MeshObject(spinning_ico_1->geometry, Vector3{ -0.4f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
+	position_text = new TextObject(Vector2{ 0.0f, -0.75f }, std::string("SHIP POS: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
+	velocity_text = new TextObject(Vector2{ 0.0f, -0.80f }, std::string("SHIP VEL: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
+	ship_rot_text = new TextObject(Vector2{ 0.0f, -0.85f }, std::string("SHIP ROT: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
+	cam_rot_text = new TextObject(Vector2{ 0.0f, -0.90f }, std::string("CAM ROT: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
 	spinning_ico_0->velocity_ang = Vector3{ 20.0f, 180.0f, 10.0f };
 	spinning_ico_1->velocity_ang = Vector3{ 200.0f, 10.0f, 40.0f };
 	spinning_ico_2->velocity_ang = Vector3{ 10.0f, 30.0f, 130.0f };
@@ -101,6 +105,10 @@ void SpaceGame::start()
 	scene_manager->addOverlayObject(spinning_ico_0);
 	scene_manager->addOverlayObject(spinning_ico_1);
 	scene_manager->addOverlayObject(spinning_ico_2);
+	scene_manager->addOverlayObject(position_text);
+	scene_manager->addOverlayObject(velocity_text);
+	scene_manager->addOverlayObject(ship_rot_text);
+	scene_manager->addOverlayObject(cam_rot_text);
 }
 
 void SpaceGame::update(float delta_time)
@@ -145,6 +153,11 @@ void SpaceGame::update(float delta_time)
 	};
 	ship->velocity_lin += (((rot_z * rot_x * rot_y)) * Vector3 { 0, 0, acceleration }) * delta_time;
 	acceleration *= powf(0.9f, delta_time);
+
+	position_text->text = std::string("SHIP POS: ") + std::to_string(ship->local_position.x) + " " + std::to_string(ship->local_position.y) + " " + std::to_string(ship->local_position.z);
+	velocity_text->text = std::string("SHIP VEL: ") + std::to_string(ship->velocity_lin.x) + " " + std::to_string(ship->velocity_lin.y) + " " + std::to_string(ship->velocity_lin.z);
+	ship_rot_text->text = std::string("SHIP ROT: ") + std::to_string(ship->local_rotation.x) + " " + std::to_string(ship->local_rotation.y) + " " + std::to_string(ship->local_rotation.z);
+	cam_rot_text->text = std::string("CAM ROT: ") + std::to_string(camera_focus->local_rotation.x) + " " + std::to_string(camera_focus->local_rotation.y) + " " + std::to_string(camera_focus->local_rotation.z);
 }
 
 void SpaceGame::mouseMove(int delta_x, int delta_y, bool down)
@@ -162,7 +175,7 @@ void SpaceGame::keyPressed(unsigned char key, bool down)
 	if (key == 'q' || key == 'Q') acceleration -= up_down;
 	if (key == 'w' || key == 'W') ship->velocity_ang.x += up_down * 10.0f;
 	if (key == 's' || key == 'S') ship->velocity_ang.x -= up_down * 10.0f;
-	if (key == 'a' || key == 'A') ship->velocity_ang.z += up_down * 10.0f;
-	if (key == 'd' || key == 'D') ship->velocity_ang.z -= up_down * 10.0f;
+	if (key == 'a' || key == 'A') ship->velocity_ang.z -= up_down * 10.0f;
+	if (key == 'd' || key == 'D') ship->velocity_ang.z += up_down * 10.0f;
 	if (key == ' ' && !down) ship->velocity_lin = Vector3{ 0,0,0 };
 }

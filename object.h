@@ -3,12 +3,14 @@
 #include "vector3.h"
 #include "mesh.h"
 #include <vector>
+#include <string>
 
 enum ObjectType
 {
 	EMPTY,
 	MESH,
 	CAMERA,
+	TEXT,
 	LIGHT
 };
 
@@ -90,4 +92,17 @@ public:
 
 	LightObject(LightType _type, Vector3 colour, Vector3 position = { 0,0,0 }, Vector3 _direction = { 0,0,0 });
 	LightObject();
+};
+
+class TextObject : public Object
+{
+public:
+	Vector2 raster_position = Vector2{ 0.0f, 0.0f };
+	std::string text = "text";
+	Vector3 colour = Vector3{ 1.0f, 1.0f, 1.0f };
+	void* font;
+
+	ObjectType getType() override;
+
+	TextObject(Vector2 _position, std::string _text, Vector3 _colour, void* _font);
 };

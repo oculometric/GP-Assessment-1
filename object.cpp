@@ -111,3 +111,16 @@ LightObject::LightObject()
 {
 	parent = NULL;
 }
+
+ObjectType TextObject::getType()
+{
+	return ObjectType::TEXT;
+}
+
+TextObject::TextObject(Vector2 _position, std::string _text, Vector3 _colour, void* _font)
+{
+	raster_position = _position;
+	text = _text;
+	colour = _colour;
+	font = _font;
+}

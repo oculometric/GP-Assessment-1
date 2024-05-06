@@ -18,6 +18,11 @@ private:
 	std::vector<MeshObject*> loaded_asteroids;
 	Mesh* asteroid_mesh;
 
+	TextObject* position_text;
+	TextObject* velocity_text;
+	TextObject* ship_rot_text;
+	TextObject* cam_rot_text;
+
 	float acceleration = 0.0f;
 
 public:

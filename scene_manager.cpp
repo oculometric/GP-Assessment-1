@@ -410,27 +410,37 @@ void SceneManager::drawOverlay(CameraObject* camera)
 	glMatrixMode(GL_MODELVIEW);
 	for (Object* child_object : overlay_root->children)
 	{
-		if (child_object->getType() != ObjectType::MESH) continue;
-		glPushMatrix();
-		glTranslatef(child_object->local_position.x * camera->aspect_ratio, child_object->local_position.y, 0);
-		glRotatef(-child_object->local_rotation.z, 0.0f, 0.0f, 1.0f);
-		glRotatef(-child_object->local_rotation.x, 1.0f, 0.0f, 0.0f);
-		glRotatef(-child_object->local_rotation.y, 0.0f, 1.0f, 0.0f);
-		glScalef(child_object->local_scale.x, child_object->local_scale.y, child_object->local_scale.z);
-		MeshObject* child_mesh_object = (MeshObject*)child_object;
-		glColor3f(0.2f, 0.9f, 0.1f);
-		glBegin(GL_LINES);
+		if (child_object->getType() == ObjectType::MESH)
 		{
-			for (int i = 0; i < child_mesh_object->geometry->trisCount() - 1; i++)
+			glPushMatrix();
+			glTranslatef(child_object->local_position.x * camera->aspect_ratio, child_object->local_position.y, 0);
+			glRotatef(-child_object->local_rotation.z, 0.0f, 0.0f, 1.0f);
+			glRotatef(-child_object->local_rotation.x, 1.0f, 0.0f, 0.0f);
+			glRotatef(-child_object->local_rotation.y, 0.0f, 1.0f, 0.0f);
+			glScalef(child_object->local_scale.x, child_object->local_scale.y, child_object->local_scale.z);
+			MeshObject* child_mesh_object = (MeshObject*)child_object;
+			glColor3f(0.2f, 0.9f, 0.1f);
+			glBegin(GL_LINES);
 			{
-				Vector3 vert_a = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i]];
-				Vector3 vert_b = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i+1]];
-				glVertex3f(vert_a.x, vert_a.y, vert_a.z);
-				glVertex3f(vert_b.x, vert_b.y, vert_b.z);
+				for (int i = 0; i < child_mesh_object->geometry->trisCount() - 1; i++)
+				{
+					Vector3 vert_a = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i]];
+					Vector3 vert_b = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i + 1]];
+					glVertex3f(vert_a.x, vert_a.y, vert_a.z);
+					glVertex3f(vert_b.x, vert_b.y, vert_b.z);
+				}
 			}
+			glEnd();
+			glPopMatrix();
 		}
-		glEnd();
-		glPopMatrix();
+		else if (child_object->getType() == ObjectType::TEXT)
+		{
+			TextObject* child_text_object = (TextObject*)child_object;
+			glRasterPos2f(child_text_object->raster_position.x, child_text_object->raster_position.y);
+			Vector3 col = child_text_object->colour;
+			glColor4f(col.x, col.y, col.z, 1.0f);
+			glutBitmapString(child_text_object->font, (const unsigned char*)child_text_object->text.c_str());
+		}
 	}
 
 	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8f);
