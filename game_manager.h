@@ -5,9 +5,8 @@ class SceneManager;
 
 class GameManager
 {
-protected:
-	SceneManager* scene_manager;
 public:
+	SceneManager* scene_manager;
 	virtual void init(SceneManager* manager);
 	virtual void start();
 	virtual void update(float delta_time);

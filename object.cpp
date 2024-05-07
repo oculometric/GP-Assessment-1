@@ -15,6 +15,11 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 
 void Object::destroy()
 {
+	for (Object* child : children)
+	{
+		if (!child);
+		child->destroy();
+	}
 	removeFromParent(false);
 	delete this;
 }

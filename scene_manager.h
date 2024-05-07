@@ -61,5 +61,7 @@ public:
 	void addOverlayObject(Object* obj);
 	inline LightObject* getLight(unsigned char index) { if (index >= 8) return NULL; else return lights + index; }
 
+	void setGameManager(GameManager* game);
+
 	~SceneManager();
 };

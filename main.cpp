@@ -4,6 +4,4 @@
 int main(int argc, char* argv[])
 {
 	SceneManager s(argc, argv, 600, 600, new SpaceGame());
-
-
 }

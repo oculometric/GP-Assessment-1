@@ -25,6 +25,9 @@ private:
 
 	Material* particle_mat;
 
+	MeshObject* planet;
+	MeshObject* moon;
+
 	float acceleration = 0.0f;
 
 public:
@@ -32,4 +35,5 @@ public:
 	void update(float delta_time) override;
 	void mouseMove(int delta_x, int delta_y, bool down) override;
 	void keyPressed(unsigned char key, bool down) override;
+	void destroy();
 };

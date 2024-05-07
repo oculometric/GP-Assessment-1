@@ -5,6 +5,7 @@
 #include "GL/freeglut.h"
 #include "GL/glut.h"
 #include "point_generator.h"
+#include "museum_game.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -19,8 +20,18 @@ float randf()
 	return (((float)rand() / RAND_MAX) * 2.0f) - 1.0f;
 }
 
+static SpaceGame* space_game;
+
+void spaceMenuFunc(int value)
+{
+	if (space_game && value == 1)
+		space_game->destroy();
+	space_game->scene_manager->setGameManager(new MuseumGame());
+}
+
 void SpaceGame::start()
 {
+	space_game = this;
 	asteroid_points = new Vector3[NUM_ASTEROIDS];
 	generatePoints(NUM_ASTEROIDS, 2, Vector3{ -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS }, Vector3{ ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS }, asteroid_points);
 
@@ -43,7 +54,7 @@ void SpaceGame::start()
 	cam->far_clip = 3000.0f;
 	camera_focus->addChild(cam, true);
 
-	MeshObject* planet = new MeshObject(new Mesh("planet.obj"));
+	planet = new MeshObject(new Mesh("planet.obj"));
 	planet->geometry->material = new Material(Vector3{ 1,0,1 }, 0.1f, new Texture());
 	planet->geometry->material->albedo->loadBMP("moon_and_planet_t.bmp");
 	planet->local_position = Vector3{ 1200, 200, 400 };
@@ -51,7 +62,7 @@ void SpaceGame::start()
 	planet->local_scale = Vector3{ 100, 100, 100 };
 	scene_manager->addObject(planet);
 
-	MeshObject* moon = new MeshObject(new Mesh("moon.obj"));
+	moon = new MeshObject(new Mesh("moon.obj"));
 	moon->geometry->material = planet->geometry->material;
 	moon->local_position = Vector3{ 15, 0, 0 };
 	moon->velocity_ang.z = 0.2f;
@@ -112,6 +123,11 @@ void SpaceGame::start()
 	scene_manager->addOverlayObject(velocity_text);
 	scene_manager->addOverlayObject(ship_rot_text);
 	scene_manager->addOverlayObject(cam_rot_text);
+
+	glutCreateMenu(spaceMenuFunc);
+	glutSetMenu(0);
+	glutAddMenuEntry("switch realities", 1);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 void SpaceGame::update(float delta_time)
@@ -188,4 +204,31 @@ void SpaceGame::keyPressed(unsigned char key, bool down)
 	if (key == 'a' || key == 'A') ship->velocity_ang.z -= up_down * 10.0f;
 	if (key == 'd' || key == 'D') ship->velocity_ang.z += up_down * 10.0f;
 	if (key == ' ' && !down) ship->velocity_lin = Vector3{ 0,0,0 };
+}
+
+void SpaceGame::destroy()
+{
+	delete ship->geometry->material;
+	delete ship->geometry;
+	delete asteroid_mesh->material;
+	delete asteroid_mesh;
+	delete particle_mat;
+	delete position_text;
+	delete velocity_text;
+	delete ship_rot_text;
+	delete cam_rot_text;
+	delete planet->geometry->material;
+	delete planet->geometry;
+	delete moon->geometry;
+
+	planet->destroy();
+
+	CameraObject* cam = scene_manager->getCamera();
+	cam->removeFromParent(true);
+	scene_manager->addObject(cam);
+
+	camera_focus->destroy();
+
+	ship->destroy();
+	for (Object* asteroid : loaded_asteroids) asteroid->destroy();
 }

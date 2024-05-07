@@ -748,3 +748,8 @@ void SceneManager::addOverlayObject(Object* obj)
 
 	overlay_root->addChild(obj, true);
 }
+
+void SceneManager::setGameManager(GameManager* game)
+{
+	game_manager = game;
+}
