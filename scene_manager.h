@@ -31,11 +31,14 @@ private:
 	int viewport_width = 0;
 	int viewport_height = 0;
 
+	unsigned int post_process_texture_id = -1;
+
 	void renderFromCamera(CameraObject* camera);
 	void drawOverlay(CameraObject* camera);
 	void renderHierarchy(Object* root);
 	void drawEnvironmentCubemap(CameraObject* camera);
 	void drawObject(MeshObject* obj);
+	void drawParticle(ParticleObject* obj);
 	void performPostProcessing(CameraObject* camera);
 	void updateLights();
 public:

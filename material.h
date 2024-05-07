@@ -18,6 +18,7 @@ public:
 	Texture* albedo;
 
 	float shininess;
+	bool is_unlit = false;
 
 	Material(Vector3 solid_colour, float reflectance = 0.3f, Texture* albedo_texture = NULL);
 	

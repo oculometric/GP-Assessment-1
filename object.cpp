@@ -13,6 +13,12 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 	// TODO: apply inverse transform of this to child transform to compensate for new relationship
 }
 
+void Object::destroy()
+{
+	removeFromParent(false);
+	delete this;
+}
+
 void Object::removeFromParent(bool keep_world_transform)
 {
 	if (parent == NULL) return;
@@ -123,4 +129,20 @@ TextObject::TextObject(Vector2 _position, std::string _text, Vector3 _colour, vo
 	text = _text;
 	colour = _colour;
 	font = _font;
+}
+
+ObjectType ParticleObject::getType()
+{
+	return ObjectType::PARTICLE;
+}
+
+ParticleObject::ParticleObject(float _lifetime, Vector3 position, Vector3 rotation, Vector3 scale, Material* mat)
+{
+	lifetime = _lifetime;
+	material = mat;
+
+	parent = NULL;
+	local_position = position;
+	local_rotation = rotation;
+	local_scale = scale;
 }

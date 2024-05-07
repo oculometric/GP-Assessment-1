@@ -11,7 +11,8 @@ enum ObjectType
 	MESH,
 	CAMERA,
 	TEXT,
-	LIGHT
+	LIGHT,
+	PARTICLE
 };
 
 class Object
@@ -33,6 +34,7 @@ public:
 
 	void generateMatrix();
 	void addChild(Object* obj, bool keep_world_transform);
+	void destroy();
 	void removeFromParent(bool keep_world_transform);
 
 	void performPhysicsUpdate(float delta_time);
@@ -105,4 +107,17 @@ public:
 	ObjectType getType() override;
 
 	TextObject(Vector2 _position, std::string _text, Vector3 _colour, void* _font);
+};
+
+class ParticleObject : public Object
+{
+public:
+	float lifetime;
+	float time_alive = 0;
+
+	Material* material = NULL;
+
+	ObjectType getType() override;
+
+	ParticleObject(float _lifetime, Vector3 position = { 0,0,0 }, Vector3 rotation = { 0,0,0 }, Vector3 scale = { 0,0,0 }, Material* mat = NULL);
 };

@@ -23,6 +23,8 @@ private:
 	TextObject* ship_rot_text;
 	TextObject* cam_rot_text;
 
+	Material* particle_mat;
+
 	float acceleration = 0.0f;
 
 public:

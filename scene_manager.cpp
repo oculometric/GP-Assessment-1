@@ -138,7 +138,7 @@ void SceneManager::frameRefresh(int value)
 
 	game_manager->update(delta_time);
 
-	// perform physics update for all objects
+	// perform physics update for all objects (and tick particle lifetimes)
 	std::queue<Object*> physics_tick_queue;
 	physics_tick_queue.push(world_root);
 	while (!physics_tick_queue.empty())
@@ -147,6 +147,14 @@ void SceneManager::frameRefresh(int value)
 		physics_tick_queue.pop();
 
 		obj->performPhysicsUpdate(delta_time);
+		
+		if (obj->getType() == ObjectType::PARTICLE)
+		{
+			ParticleObject* pobj = (ParticleObject*)obj;
+			pobj->time_alive += delta_time;
+			if (pobj->time_alive >= pobj->lifetime)
+				pobj->destroy();
+		}
 
 		for (Object* child_obj : obj->children) physics_tick_queue.push(child_obj);
 	}
@@ -255,6 +263,8 @@ void SceneManager::renderHierarchy(Object* root)
 	// draw root
 	if (root->getType() == ObjectType::MESH)
 		drawObject((MeshObject*)root);
+	if (root->getType() == ObjectType::PARTICLE)
+		drawParticle((ParticleObject*)root);
 
 	// iterate over children, calling renderHierarchy on each
 	for (Object* child : root->children)
@@ -436,9 +446,9 @@ void SceneManager::drawOverlay(CameraObject* camera)
 		else if (child_object->getType() == ObjectType::TEXT)
 		{
 			TextObject* child_text_object = (TextObject*)child_object;
-			glRasterPos2f(child_text_object->raster_position.x, child_text_object->raster_position.y);
 			Vector3 col = child_text_object->colour;
 			glColor4f(col.x, col.y, col.z, 1.0f);
+			glRasterPos2f(child_text_object->raster_position.x, child_text_object->raster_position.y);
 			glutBitmapString(child_text_object->font, (const unsigned char*)child_text_object->text.c_str());
 		}
 	}
@@ -504,6 +514,8 @@ void SceneManager::drawObject(MeshObject* obj)
 			float colour[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
 		}
+		if (obj->geometry->material->is_unlit)
+			glDisable(GL_LIGHTING);
 	}
 	else
 	{
@@ -534,11 +546,67 @@ void SceneManager::drawObject(MeshObject* obj)
 		glVertex3f(vert.x, vert.y, vert.z);
 	}
 	glEnd();
+
+	glEnable(GL_LIGHTING);
+}
+
+void SceneManager::drawParticle(ParticleObject* obj)
+{
+	if (!obj->material) return;
+
+	MaterialMode mode = obj->material->getMode();
+	if (mode == MaterialMode::SOLID)
+	{
+		// solid colour material
+		float colour[4] = {
+			obj->material->colour.x,
+			obj->material->colour.y,
+			obj->material->colour.z,
+			1.0f
+		};
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	glMaterialf(GL_FRONT, GL_SHININESS, obj->material->shininess);
+	if (mode == MaterialMode::ALBEDO)
+	{
+		// textured material
+		glBindTexture(GL_TEXTURE_2D, obj->material->albedo->getID());
+		float colour[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
+	}
+	if (obj->material->is_unlit)
+	{
+		glDisable(GL_LIGHTING);
+		glColor3f(obj->material->colour.x, obj->material->colour.y, obj->material->colour.z);
+	}
+
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glPolygonMode(GL_BACK, GL_FILL);
+
+	glDisable(GL_CULL_FACE);
+	
+	glBegin(GL_QUADS);
+	{
+		// TODO: make this always face the camera?
+		glTexCoord2f(0, 0);
+		glVertex3f(-0.5f, -0.5f, 0);
+		glTexCoord2f(1, 0);
+		glVertex3f(0.5f, -0.5f, 0);
+		glTexCoord2f(1, 1);
+		glVertex3f(0.5f, 0.5f, 0);
+		glTexCoord2f(0, 1);
+		glVertex3f(-0.5f, 0.5f, 0);
+	}
+	glEnd();
+
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_LIGHTING);
 }
 
 void SceneManager::performPostProcessing(CameraObject* camera)
 {
-	return;		// so drawpixels isn't supported on all graphics cards. which makes custom post-processing in OpenGL 1.x, actually, fully, impossible. :((((
+	return;	// unfortunately, without being able to do multiple passes or write directly to GPU screen buffer, this doesn't work
 	// if camera is invalid, skip
 	if (!camera) return;
 	// if the post processing buffer doesn't exist, create it
@@ -581,7 +649,41 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 	}
 
 	// write pixels back to the framebuffer
-	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
+	if (post_process_texture_id == -1)
+		glGenTextures(1, &post_process_texture_id);
+	glBindTexture(GL_TEXTURE_2D, post_process_texture_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, viewport_width, viewport_height, 0, GL_RGBA, GL_FLOAT, post_processing_buffer);
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glDisable(GL_LIGHTING);
+	glDisable(GL_FOG);
+	glBegin(GL_QUADS);
+	{
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3f(-1.0, -1.0f, 0.0f);
+
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3f(1.0, -1.0f, 0.0f);
+
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3f(1.0, 1.0f, 0.0f);
+
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3f(-1.0, 1.0f, 0.0f);
+	}
+	glEnd();
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_FOG);
+	//glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
 }
 
 void SceneManager::updateLights()

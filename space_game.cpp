@@ -90,6 +90,9 @@ void SpaceGame::start()
 		new_asteroid->velocity_lin = Vector3{ randf() * 0.2f, randf() * 0.2f, randf() * 0.2f };
 	}
 
+	particle_mat = new Material({ 1, 0.5f, 0 }, 0.1f);
+	particle_mat->is_unlit = true;
+
 	MeshObject* overlay_ship = new MeshObject(ship->geometry, Vector3{ 0.8f, 0.8f, 0.0f }, Vector3{ 90.0f, 0.0f, 0.0f }, Vector3{ 0.03f, 0.03f, 0.03f });
 	MeshObject* spinning_ico_0 = new MeshObject(new Mesh("icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	MeshObject* spinning_ico_1 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.6f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
@@ -152,7 +155,14 @@ void SpaceGame::update(float delta_time)
 		0, 0, 1
 	};
 	ship->velocity_lin += (((rot_z * rot_x * rot_y)) * Vector3 { 0, 0, acceleration }) * delta_time;
-	acceleration *= powf(0.9f, delta_time);
+	ship->velocity_lin *= powf(0.9f, delta_time);
+	if (acceleration > 0.1f)
+	{
+		std::cout << "spawning particle" << std::endl;
+		ParticleObject* part = new ParticleObject(2.0f, ship->local_position, { 0,0,0 }, { 2.0f, 2.0f, 2.0f }, particle_mat);
+		part->velocity_lin = { 0,0,-9 };
+		scene_manager->addObject(part);
+	}
 
 	position_text->text = std::string("SHIP POS: ") + std::to_string(ship->local_position.x) + " " + std::to_string(ship->local_position.y) + " " + std::to_string(ship->local_position.z);
 	velocity_text->text = std::string("SHIP VEL: ") + std::to_string(ship->velocity_lin.x) + " " + std::to_string(ship->velocity_lin.y) + " " + std::to_string(ship->velocity_lin.z);
