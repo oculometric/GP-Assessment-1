@@ -606,7 +606,7 @@ void SceneManager::drawParticle(ParticleObject* obj)
 
 void SceneManager::performPostProcessing(CameraObject* camera)
 {
-	return;	// unfortunately, without being able to do multiple passes or write directly to GPU screen buffer, this doesn't work
+	//return;	// unfortunately, without being able to do multiple passes or write directly to GPU screen buffer, this doesn't work
 	// if camera is invalid, skip
 	if (!camera) return;
 	// if the post processing buffer doesn't exist, create it
@@ -617,7 +617,6 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 	glReadPixels(0, 0, viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
 
 	Vector2 viewport_divisor = Vector2{ 2.0f / (float)viewport_width, 2.0f / (float)viewport_height };
-
 	// loop over pixels
 	Vector2 uv = { -1.0f, -1.0f };
 	unsigned int buffer_index = 0;
@@ -652,37 +651,69 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 	if (post_process_texture_id == -1)
 		glGenTextures(1, &post_process_texture_id);
 	glBindTexture(GL_TEXTURE_2D, post_process_texture_id);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, viewport_width, viewport_height, 0, GL_RGBA, GL_FLOAT, post_processing_buffer);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-
-	glDisable(GL_LIGHTING);
-	glDisable(GL_FOG);
-	glBegin(GL_QUADS);
+	glOrtho(-1, 1, -1, 1, -1, 1);
+	
+	glDisable(GL_CULL_FACE);
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glPolygonMode(GL_BACK, GL_FILL);
+	float col[4] =
 	{
-		glColor3f(1.0f, 1.0f, 1.0f);
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f
+	};
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, col);
+	col[0] = 1.0f;
+	col[1] = 1.0f;
+	col[2] = 1.0f;
+	col[3] = 1.0f;
+	glMaterialfv(GL_FRONT, GL_EMISSION, col);
+
+	glDisable(GL_FOG);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glBegin(GL_TRIANGLES);
+	{
+		// bottom left
 		glTexCoord2f(0.0f, 0.0f);
-		glVertex3f(-1.0, -1.0f, 0.0f);
+		glVertex3f(-1.0, -1.0f, 0.5f);
 
-		glColor3f(1.0f, 1.0f, 1.0f);
+		// bottom right
 		glTexCoord2f(1.0f, 0.0f);
-		glVertex3f(1.0, -1.0f, 0.0f);
+		glVertex3f(1.0, -1.0f, 0.5f);
 
-		glColor3f(1.0f, 1.0f, 1.0f);
+		// top right
 		glTexCoord2f(1.0f, 1.0f);
-		glVertex3f(1.0, 1.0f, 0.0f);
+		glVertex3f(1.0, 1.0f, 0.5f);
 
-		glColor3f(1.0f, 1.0f, 1.0f);
+		// top right
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3f(1.0, 1.0f, 0.5f);
+
+		// top left
 		glTexCoord2f(0.0f, 1.0f);
-		glVertex3f(-1.0, 1.0f, 0.0f);
+		glVertex3f(-1.0, 1.0f, 0.5f);
+
+		// bottom left
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3f(-1.0, -1.0f, 0.5f);
 	}
 	glEnd();
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_FOG);
+	glEnable(GL_CULL_FACE);
+
 	//glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
 }
 

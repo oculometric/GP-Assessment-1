@@ -25,8 +25,10 @@ static SpaceGame* space_game;
 void spaceMenuFunc(int value)
 {
 	if (space_game && value == 1)
+	{
 		space_game->destroy();
-	space_game->scene_manager->setGameManager(new MuseumGame());
+		space_game->scene_manager->setGameManager(new MuseumGame());
+	}
 }
 
 void SpaceGame::start()
