@@ -22,7 +22,7 @@ float randf()
 
 static SpaceGame* space_game;
 
-void spaceMenuFunc(int value)
+void switchRealitiesFunc(int value)
 {
 	if (space_game && value == 1)
 	{
@@ -126,7 +126,7 @@ void SpaceGame::start()
 	scene_manager->addOverlayObject(ship_rot_text);
 	scene_manager->addOverlayObject(cam_rot_text);
 
-	glutCreateMenu(spaceMenuFunc);
+	glutCreateMenu(switchRealitiesFunc);
 	glutSetMenu(0);
 	glutAddMenuEntry("switch realities", 1);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);

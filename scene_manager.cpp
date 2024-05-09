@@ -606,7 +606,6 @@ void SceneManager::drawParticle(ParticleObject* obj)
 
 void SceneManager::performPostProcessing(CameraObject* camera)
 {
-	//return;	// unfortunately, without being able to do multiple passes or write directly to GPU screen buffer, this doesn't work
 	// if camera is invalid, skip
 	if (!camera) return;
 	// if the post processing buffer doesn't exist, create it
