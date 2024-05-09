@@ -27,6 +27,7 @@ private:
 
 	MeshObject* planet;
 	MeshObject* moon;
+	MeshObject* overlays[4];
 
 	float acceleration = 0.0f;
 

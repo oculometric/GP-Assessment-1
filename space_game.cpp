@@ -28,6 +28,7 @@ void switchRealitiesFunc(int value)
 	{
 		space_game->destroy();
 		space_game->scene_manager->setGameManager(new MuseumGame());
+		delete space_game;
 	}
 }
 
@@ -109,7 +110,11 @@ void SpaceGame::start()
 	MeshObject* overlay_ship = new MeshObject(ship->geometry, Vector3{ 0.8f, 0.8f, 0.0f }, Vector3{ 90.0f, 0.0f, 0.0f }, Vector3{ 0.03f, 0.03f, 0.03f });
 	MeshObject* spinning_ico_0 = new MeshObject(new Mesh("icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	MeshObject* spinning_ico_1 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.6f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
-	MeshObject* spinning_ico_2 = new MeshObject(spinning_ico_1->geometry, Vector3{ -0.4f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
+	MeshObject* spinning_ico_2 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.4f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
+	overlays[0] = overlay_ship;
+	overlays[1] = spinning_ico_0;
+	overlays[2] = spinning_ico_1;
+	overlays[3] = spinning_ico_2;
 	position_text = new TextObject(Vector2{ 0.0f, -0.75f }, std::string("SHIP POS: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
 	velocity_text = new TextObject(Vector2{ 0.0f, -0.80f }, std::string("SHIP VEL: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
 	ship_rot_text = new TextObject(Vector2{ 0.0f, -0.85f }, std::string("SHIP ROT: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
@@ -215,10 +220,10 @@ void SpaceGame::destroy()
 	delete asteroid_mesh->material;
 	delete asteroid_mesh;
 	delete particle_mat;
-	delete position_text;
-	delete velocity_text;
-	delete ship_rot_text;
-	delete cam_rot_text;
+	position_text->destroy();
+	velocity_text->destroy();
+	ship_rot_text->destroy();
+	cam_rot_text->destroy();
 	delete planet->geometry->material;
 	delete planet->geometry;
 	delete moon->geometry;
@@ -232,5 +237,12 @@ void SpaceGame::destroy()
 	camera_focus->destroy();
 
 	ship->destroy();
+
+	overlays[0]->destroy();
+	delete overlays[1]->geometry;
+	overlays[1]->destroy();
+	overlays[2]->destroy();
+	overlays[3]->destroy();
+
 	for (Object* asteroid : loaded_asteroids) asteroid->destroy();
 }

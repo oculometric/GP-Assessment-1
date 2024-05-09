@@ -782,4 +782,6 @@ void SceneManager::addOverlayObject(Object* obj)
 void SceneManager::setGameManager(GameManager* game)
 {
 	game_manager = game;
+	game_manager->init(this);
+	game_manager->start();
 }
