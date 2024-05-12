@@ -33,6 +33,8 @@ private:
 
 	unsigned int post_process_texture_id = -1;
 
+	Vector3* lut_buffer = NULL;
+
 	void renderFromCamera(CameraObject* camera);
 	void drawOverlay(CameraObject* camera);
 	void renderHierarchy(Object* root);

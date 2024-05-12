@@ -71,6 +71,22 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	// enable normalisation, since we're scaling objects
 	glEnable(GL_NORMALIZE);
 
+	// load LUT
+	Vector3* lut_input_buffer;
+	lut_buffer = new Vector3[512 * 512];
+	Texture::loadBMPRaw("lut.bmp", lut_input_buffer);
+	for (int x = 0; x < 64; x++)
+	{
+		for (int y = 0; y < 64; y++)
+		{
+			for (int z = 0; z < 64; z++)
+			{
+				lut_buffer[x + (y * 64) + (z * 64 * 64)] = lut_input_buffer[x + (y * 512) + ((z % 8) * 64) + ((z / 8) * 64 * 64)];
+			}
+		}
+	}
+	delete lut_input_buffer;
+
 	game_manager = game;
 	game_manager->init(this);
 
@@ -604,6 +620,14 @@ void SceneManager::drawParticle(ParticleObject* obj)
 	glEnable(GL_LIGHTING);
 }
 
+Vector3 sampleLUT(Vector3* lut, Vector3 colour)
+{
+	int x_index = floor(colour.x * 64);
+	int y_index = floor(colour.y * 64);
+	int z_index = floor(colour.z * 64);
+	return lut[x_index + (y_index * 64) + (z_index * 64 * 64)];
+}
+
 void SceneManager::performPostProcessing(CameraObject* camera)
 {
 	// if camera is invalid, skip
@@ -629,12 +653,7 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 
 			// actual post-processing code
 			in_colour *= 1.0f - (((uv.x * uv.x) + (uv.y * uv.y)) * 0.5f); // vignette
-			in_colour *= 0.97f; // gain
-			in_colour += Vector3{ 0.06f, 0.05f, 0.065f }; // lift
-
-			//in_colour = rgb_to_hsv(in_colour); // saturate
-			//in_colour.y *= 1.1f;
-			//in_colour = hsv_to_rgb(in_colour);
+			in_colour = sampleLUT(lut_buffer, in_colour); // LUT
 
 			// set back to buffer
 			*((Vector3*)(post_processing_buffer + buffer_index)) = in_colour;

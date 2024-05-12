@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "vector3.h"
 
 #pragma pack(push, 1)
 struct BMPHeader
@@ -64,6 +65,7 @@ public:
 	Texture();
 
 	bool loadBMP(std::string path);
+	static bool loadBMPRaw(std::string path, Vector3*& ptr);
 
 	unsigned int getID();
 	unsigned int getWidth();

@@ -27,7 +27,7 @@ inline Vector3 operator%(const Vector3& a, const Vector3& b) { return Vector3{ (
 
 inline float sq_mag(const Vector3& a) { return a ^ a; }
 inline float mag(const Vector3& a) { return sqrt(sq_mag(a)); }
-inline Vector3 norm(const Vector3& a) { return a / mag(a); }
+inline Vector3 norm(const Vector3& a) { return mag(a) > 0 ? a / mag(a) : Vector3{ 0,0,0 }; }
 
 inline std::ostream& operator<<(std::ostream& stream, const Vector3& v) { return stream << '(' << v.x << ", " << v.y << ", " << v.z << ')'; }
 
