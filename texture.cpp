@@ -93,10 +93,11 @@ bool Texture::loadBMPRaw(std::string path, Vector3*& ptr)
 	for (int i = 0; i < bitmap_header.width_pixels * bitmap_header.height_pixels; i++)
 	{
 		Vector3 pixel;
-		pixel.x = pixel_data[(i * bytes_per_pixel) + 2] / 255.0f;
-		pixel.y = pixel_data[(i * bytes_per_pixel) + 1] / 255.0f;
-		pixel.z = 0;//pixel_data[(i * bytes_per_pixel) + 0] / 255.0f;
-		ptr[i] = pixel;
+		pixel.z = (pixel_data[(i * bytes_per_pixel) + 0] / 255.0f);	// B
+		pixel.y = (pixel_data[(i * bytes_per_pixel) + 1] / 255.0f);	// G
+		pixel.x = (pixel_data[(i * bytes_per_pixel) + 2] / 255.0f);	// R
+		// why the fuck does BMP store the buffer upside down??
+		ptr[(i % bitmap_header.width_pixels) + ((bitmap_header.height_pixels - (i / bitmap_header.width_pixels) - 1) * bitmap_header.width_pixels)] = pixel;
 	}
 
 	file.close();

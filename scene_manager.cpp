@@ -81,7 +81,8 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 		{
 			for (int z = 0; z < 64; z++)
 			{
-				lut_buffer[x + (y * 64) + (z * 64 * 64)] = lut_input_buffer[x + (y * 512) + ((z % 8) * 64) + ((z / 8) * 64 * 64)];
+				// FIXME:blue breaks it
+				lut_buffer[x + (y * 64) + (z * 64 * 64)] = lut_input_buffer[x + (y * 64 * 8) /* + ((z % 8) * 64) + ((z / 8) * 64 * 64)*/];
 			}
 		}
 	}
@@ -235,6 +236,7 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	// compute a matrix for the camera's transform (i.e. world-to-view)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
 	Object* camera_matrix_stack = camera;
 	while (camera_matrix_stack != NULL)
 	{
@@ -424,6 +426,23 @@ void SceneManager::drawOverlay(CameraObject* camera)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-camera->aspect_ratio, camera->aspect_ratio, -1, 1, -1, 1);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	// TODO: REMOVE THIS DEMO CODE
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	glBegin(GL_TRIANGLES);
+	{
+		glColor3f(1, 0, 0);
+		glVertex3f(0, 1, 0);
+		glColor3f(0, 0, 1);
+		glVertex3f(-0.707, -0.707, 0);
+		glColor3f(0, 1, 0);
+		glVertex3f(0.707, -0.707, 0);
+	}
+	glEnd();
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
 
 	// disable lighting
 	glDisable(GL_LIGHTING);
@@ -622,9 +641,9 @@ void SceneManager::drawParticle(ParticleObject* obj)
 
 Vector3 sampleLUT(Vector3* lut, Vector3 colour)
 {
-	int x_index = floor(colour.x * 64);
-	int y_index = floor(colour.y * 64);
-	int z_index = floor(colour.z * 64);
+	int x_index = min(floor(colour.x * 64), 63);
+	int y_index = min(floor(colour.y * 64), 63);
+	int z_index = min(floor(colour.z * 64), 63);
 	return lut[x_index + (y_index * 64) + (z_index * 64 * 64)];
 }
 
