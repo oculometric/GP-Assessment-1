@@ -30,6 +30,7 @@ private:
 	float* post_processing_buffer = NULL;
 	int viewport_width = 0;
 	int viewport_height = 0;
+	bool skip_postprocessing = false;
 
 	unsigned int post_process_texture_id = -1;
 

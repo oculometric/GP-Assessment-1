@@ -81,8 +81,7 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 		{
 			for (int z = 0; z < 64; z++)
 			{
-				// FIXME:blue breaks it
-				lut_buffer[x + (y * 64) + (z * 64 * 64)] = lut_input_buffer[x + (y * 64 * 8) /* + ((z % 8) * 64) + ((z / 8) * 64 * 64)*/];
+				lut_buffer[x + (y * 64) + (z * 64 * 64)] = lut_input_buffer[x + (y * 64 * 8) + ((z % 8) * 64) + ((z >> 3) * 64 * 64 * 8)];
 			}
 		}
 	}
@@ -427,23 +426,6 @@ void SceneManager::drawOverlay(CameraObject* camera)
 	glLoadIdentity();
 	glOrtho(-camera->aspect_ratio, camera->aspect_ratio, -1, 1, -1, 1);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	// TODO: REMOVE THIS DEMO CODE
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-	glBegin(GL_TRIANGLES);
-	{
-		glColor3f(1, 0, 0);
-		glVertex3f(0, 1, 0);
-		glColor3f(0, 0, 1);
-		glVertex3f(-0.707, -0.707, 0);
-		glColor3f(0, 1, 0);
-		glVertex3f(0.707, -0.707, 0);
-	}
-	glEnd();
-	glEnable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
-
 	// disable lighting
 	glDisable(GL_LIGHTING);
 	glDisable(GL_FOG);
@@ -650,7 +632,7 @@ Vector3 sampleLUT(Vector3* lut, Vector3 colour)
 void SceneManager::performPostProcessing(CameraObject* camera)
 {
 	// if camera is invalid, skip
-	if (!camera) return;
+	if (!camera || skip_postprocess) return;
 	// if the post processing buffer doesn't exist, create it
 	if (!post_processing_buffer)
 		post_processing_buffer = new float[viewport_width * viewport_height * 4];
