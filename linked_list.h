@@ -12,8 +12,8 @@ class LinkedList
 {
 private:
 	size_t length;
-	LinkedListElement* head;
-	LinkedListElement* tail;
+	LinkedListElement<T>* head;
+	LinkedListElement<T>* tail;
 public:
 	void pushBack(T value)
 	{
@@ -44,15 +44,15 @@ public:
 	{
 		if (index >= length) throw "index out of range";
 		
-		LinkedListElement<T>* item_before = head->next;
+		LinkedListElement<T>* item_before = head;
 		size_t offset = 0;
-		while (offset < index - 1)
+		while (offset <= index - 1 && index > 0)
 		{
 			item_before = item_before->next;
 			offset++;
 		}
 
-		item = item_before->next;
+		LinkedListElement<T>* item = item_before->next;
 		T value = item->data;
 		LinkedListElement<T>* next = item->next;
 

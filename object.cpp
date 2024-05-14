@@ -7,7 +7,7 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 
 	// establish relationship
 	obj->parent = this;
-	children.push_back(obj);
+	children.pushBack(obj);
 
 	// alter transform
 	// TODO: apply inverse transform of this to child transform to compensate for new relationship
@@ -15,10 +15,10 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 
 void Object::destroy()
 {
-	for (Object* child : children)
+	for (size_t i = 0; i < children.getLength(); i++)
 	{
-		if (!child);
-		child->destroy();
+		if (!children[i]);
+		children[i]->destroy();
 	}
 	removeFromParent(false);
 	delete this;
@@ -29,20 +29,13 @@ void Object::removeFromParent(bool keep_world_transform)
 	if (parent == NULL) return;
 
 	int index = 0;
-	for (Object* obj : parent->children)
+	for (index = 0; index < parent->children.getLength(); index++)
 	{
-		if (obj == this) break;
+		if (parent->children[index] == this) break;
 		index++;
 	}
 
-	if (index >= parent->children.size())
-	{
-		parent = NULL;
-		return;
-	}
-
-	std::swap(parent->children[index], parent->children.back());
-	parent->children.pop_back();
+	parent->children.removeAt(index);
 	parent = NULL;
 }
 

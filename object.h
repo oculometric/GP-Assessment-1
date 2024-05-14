@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include <vector>
 #include <string>
+#include "linked_list.h"
 
 enum ObjectType
 {
@@ -27,7 +28,7 @@ public:
 	Vector3 velocity_lin = { 0,0,0 };
 	Vector3 velocity_ang = { 0,0,0 };
 
-	std::vector<Object*> children;
+	LinkedList<Object*> children;
 	Object* parent = NULL;
 
 	std::string name = "object";

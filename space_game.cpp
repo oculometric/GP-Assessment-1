@@ -81,7 +81,8 @@ void SpaceGame::start()
 	glFogf(GL_FOG_DENSITY, 0.4f);
 
 	LightObject* star = scene_manager->getLight(0);
-	*star = LightObject(LightType::DIRECTIONAL, Vector3{ 3.0f, 2.8f, 2.6f });
+	star->diffuse_colour = Vector3{ 3.0f, 2.8f, 2.6f };
+	star->type = LightType::DIRECTIONAL;
 	star->direction = Vector3{ 0,0.2,-1.0f };
 	star->ambient_colour = Vector3{ 0.05f, 0.05f, 0.2f };
 

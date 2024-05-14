@@ -178,12 +178,12 @@ void SceneManager::frameRefresh(int value)
 				pobj->destroy();
 		}
 
-		for (Object* child_obj : obj->children) physics_tick_queue.push(child_obj);
+		for (size_t i = 0; i < obj->children.getLength(); i++) physics_tick_queue.push(obj->children[i]);
 	}
 	// and all overlay objects
-	for (Object* obj : overlay_root->children)
+	for (size_t i = 0; i < overlay_root->children.getLength(); i++)
 	{
-		obj->performPhysicsUpdate(delta_time);
+		overlay_root->children[i]->performPhysicsUpdate(delta_time);
 	}
 
 	// check for errors
@@ -290,9 +290,9 @@ void SceneManager::renderHierarchy(Object* root)
 		drawParticle((ParticleObject*)root);
 
 	// iterate over children, calling renderHierarchy on each
-	for (Object* child : root->children)
+	for (size_t i = 0; i < root->children.getLength(); i++)
 	{
-		renderHierarchy(child);
+		renderHierarchy(root->children[i]);
 	}
 	
 	// pop matrix
@@ -441,8 +441,9 @@ void SceneManager::drawOverlay(CameraObject* camera)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
 	glMatrixMode(GL_MODELVIEW);
-	for (Object* child_object : overlay_root->children)
+	for (size_t i = 0; i < overlay_root->children.getLength(); i++)
 	{
+		Object* child_object = overlay_root->children[i];
 		if (child_object->getType() == ObjectType::MESH)
 		{
 			glPushMatrix();
