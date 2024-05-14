@@ -89,6 +89,9 @@
     <ClInclude Include="museum_game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="linked_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="freeglut.lib" />

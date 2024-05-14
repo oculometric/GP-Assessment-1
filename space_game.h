@@ -6,6 +6,8 @@
 
 #include <vector>
 
+void switchRealities();
+
 class SpaceGame : public GameManager
 {
 private:

@@ -22,14 +22,13 @@ float randf()
 
 static SpaceGame* space_game;
 
-void switchRealitiesFunc(int value)
+void switchRealities()
 {
-	if (space_game && value == 1)
-	{
-		space_game->destroy();
-		space_game->scene_manager->setGameManager(new MuseumGame());
-		delete space_game;
-	}
+	if (!space_game) return;
+	space_game->destroy();
+	space_game->scene_manager->setGameManager(new MuseumGame());
+	delete space_game;
+	space_game = NULL;
 }
 
 void SpaceGame::start()
@@ -130,11 +129,6 @@ void SpaceGame::start()
 	scene_manager->addOverlayObject(velocity_text);
 	scene_manager->addOverlayObject(ship_rot_text);
 	scene_manager->addOverlayObject(cam_rot_text);
-
-	glutCreateMenu(switchRealitiesFunc);
-	glutSetMenu(0);
-	glutAddMenuEntry("switch realities", 1);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 void SpaceGame::update(float delta_time)

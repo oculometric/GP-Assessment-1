@@ -1,6 +1,7 @@
 #include "glut_callback_handlers.h"
 
 #include "scene_manager.h"
+#include "space_game.h"
 
 namespace glut_callback_handlers
 {
@@ -27,4 +28,16 @@ namespace glut_callback_handlers
 
 	void resizeWindow(int x, int y) { if (game_global) game_global->resizeWindow(x, y); }
 
+	void menuFunc(int button)
+	{
+		switch (button)
+		{
+		case 1:
+			switchRealities();
+			break;
+		case 2:
+			game_global->togglePostprocess();
+			break;
+		}
+	}
 }

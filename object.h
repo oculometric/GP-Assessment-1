@@ -32,7 +32,6 @@ public:
 
 	std::string name = "object";
 
-	void generateMatrix();
 	void addChild(Object* obj, bool keep_world_transform);
 	void destroy();
 	void removeFromParent(bool keep_world_transform);

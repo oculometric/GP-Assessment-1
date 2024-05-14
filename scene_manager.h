@@ -30,8 +30,7 @@ private:
 	float* post_processing_buffer = NULL;
 	int viewport_width = 0;
 	int viewport_height = 0;
-	bool skip_postprocessing = false;
-
+	bool skip_postprocess = false;
 	unsigned int post_process_texture_id = -1;
 
 	Vector3* lut_buffer = NULL;
@@ -58,6 +57,7 @@ public:
 	void keyUp(uint8_t key, int x, int y);
 	void frameRefresh(int value);
 	void resizeWindow(int x, int y);
+	void togglePostprocess();
 
 	inline CameraObject* getCamera() { return active_camera; }
 	void addObject(Object* obj);

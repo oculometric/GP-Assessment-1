@@ -22,4 +22,6 @@ namespace glut_callback_handlers
 	void frameRefresh(int value);
 
 	void resizeWindow(int x, int y);
+
+	void menuFunc(int button);
 }

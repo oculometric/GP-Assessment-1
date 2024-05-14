@@ -54,6 +54,12 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	glutIgnoreKeyRepeat(1);
 	glutReshapeFunc(glut_callback_handlers::resizeWindow);
 	glutTimerFunc(1000 / 60, glut_callback_handlers::frameRefresh, 1000 / 60);
+	glutCreateMenu(glut_callback_handlers::menuFunc);
+	// configure menu
+	glutSetMenu(0);
+	glutAddMenuEntry("switch realities", 1);
+	glutAddMenuEntry("toggle postprocessing", 2);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	// enable depth buffer/testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -797,6 +803,11 @@ void SceneManager::addOverlayObject(Object* obj)
 	if (!obj) return;
 
 	overlay_root->addChild(obj, true);
+}
+
+void SceneManager::togglePostprocess()
+{
+	skip_postprocess = !skip_postprocess;
 }
 
 void SceneManager::setGameManager(GameManager* game)
