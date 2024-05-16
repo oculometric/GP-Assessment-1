@@ -7,6 +7,7 @@
 #include "glut_callback_handlers.h"
 #include "matrix3.h"
 #include <queue>
+#include <string>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -157,6 +158,7 @@ void SceneManager::frameRefresh(int value)
 	auto time_now = std::chrono::high_resolution_clock::now();
 	float delta_time = std::chrono::duration_cast<std::chrono::nanoseconds>(time_now - last_frame_time).count() / 1000000000.0f;
 	last_frame_time = time_now;
+	current_fps = (0.2f * current_fps) + (1.0f / (0.8f * delta_time));
 
 	game_manager->update(delta_time);
 
@@ -184,6 +186,20 @@ void SceneManager::frameRefresh(int value)
 	for (size_t i = 0; i < overlay_root->children.getLength(); i++)
 	{
 		overlay_root->children[i]->performPhysicsUpdate(delta_time);
+	}
+
+	// check for dead objects and delete them
+	std::queue<Object*> destruction_queue;
+	destruction_queue.push(world_root);
+	while (!destruction_queue.empty())
+	{
+		Object* obj = destruction_queue.front();
+		destruction_queue.pop();
+
+		if (obj->is_waiting_for_death)
+			delete obj;
+		else
+			for (size_t i = 0; i < obj->children.getLength(); i++) destruction_queue.push(obj->children[i]);
 	}
 
 	// check for errors
@@ -284,6 +300,7 @@ void SceneManager::renderHierarchy(Object* root)
 	glScalef(root->local_scale.x, root->local_scale.y, root->local_scale.z);
 
 	// draw root
+	objects_drawn_last_frame++;
 	if (root->getType() == ObjectType::MESH)
 		drawObject((MeshObject*)root);
 	if (root->getType() == ObjectType::PARTICLE)
@@ -444,15 +461,17 @@ void SceneManager::drawOverlay(CameraObject* camera)
 	for (size_t i = 0; i < overlay_root->children.getLength(); i++)
 	{
 		Object* child_object = overlay_root->children[i];
+		objects_drawn_last_frame++;
 		if (child_object->getType() == ObjectType::MESH)
 		{
+			MeshObject* child_mesh_object = (MeshObject*)child_object;
+			if (child_mesh_object->geometry == NULL) continue;
 			glPushMatrix();
 			glTranslatef(child_object->local_position.x * camera->aspect_ratio, child_object->local_position.y, 0);
 			glRotatef(-child_object->local_rotation.z, 0.0f, 0.0f, 1.0f);
 			glRotatef(-child_object->local_rotation.x, 1.0f, 0.0f, 0.0f);
 			glRotatef(-child_object->local_rotation.y, 0.0f, 1.0f, 0.0f);
 			glScalef(child_object->local_scale.x, child_object->local_scale.y, child_object->local_scale.z);
-			MeshObject* child_mesh_object = (MeshObject*)child_object;
 			glColor3f(0.2f, 0.9f, 0.1f);
 			glBegin(GL_LINES);
 			{
@@ -476,6 +495,18 @@ void SceneManager::drawOverlay(CameraObject* camera)
 			glutBitmapString(child_text_object->font, (const unsigned char*)child_text_object->text.c_str());
 		}
 	}
+
+	// TODO: draw scene stats
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glRasterPos2f(-0.6f, 0.8f);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)("objects: " + std::to_string(objects_drawn_last_frame)).c_str());
+	glRasterPos2f(-0.6f, 0.75f);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)("triangles: " + std::to_string(triangles_drawn_last_frame)).c_str());
+	glRasterPos2f(-0.6f, 0.7f);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)("fps: " + std::to_string(current_fps)).c_str());
+
+	objects_drawn_last_frame = 0;
+	triangles_drawn_last_frame = 0;
 
 	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8f);
 	Object* camera_matrix_stack = camera;
@@ -564,6 +595,8 @@ void SceneManager::drawObject(MeshObject* obj)
 		Vector3 vert = obj->geometry->vertices[obj->geometry->triangles[i]];
 		Vector3 normal = obj->geometry->vertex_normals[i];
 		Vector2 uv = obj->geometry->uvs[i];
+
+		triangles_drawn_last_frame++;
 
 		glTexCoord2f(uv.x, uv.y);
 		glNormal3f(normal.x, normal.y, normal.z);

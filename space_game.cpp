@@ -33,6 +33,26 @@ void switchRealities()
 
 void SpaceGame::start()
 {
+	LinkedList<int> list;
+
+	list.pushBack(0);
+	list.pushBack(1);
+	list.pushBack(2);
+	list.pushBack(3);
+	list.pushBack(4);
+	list.pushBack(5);
+	list.pushBack(6);
+
+	list.popBack();
+	list.popBack();
+	list.removeAt(0);
+	list.removeAt(0);
+	list.removeAt(1);
+	list[0];
+	list[1];
+
+
+
 	space_game = this;
 	asteroid_points = new Vector3[NUM_ASTEROIDS];
 	generatePoints(NUM_ASTEROIDS, 2, Vector3{ -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS }, Vector3{ ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS }, asteroid_points);
@@ -81,8 +101,7 @@ void SpaceGame::start()
 	glFogf(GL_FOG_DENSITY, 0.4f);
 
 	LightObject* star = scene_manager->getLight(0);
-	star->diffuse_colour = Vector3{ 3.0f, 2.8f, 2.6f };
-	star->type = LightType::DIRECTIONAL;
+	*star = LightObject(LightType::DIRECTIONAL, Vector3{ 3.0f, 2.8f, 2.6f });
 	star->direction = Vector3{ 0,0.2,-1.0f };
 	star->ambient_colour = Vector3{ 0.05f, 0.05f, 0.2f };
 
@@ -220,8 +239,11 @@ void SpaceGame::destroy()
 	ship_rot_text->destroy();
 	cam_rot_text->destroy();
 	delete planet->geometry->material;
+	planet->geometry->material = NULL;
 	delete planet->geometry;
+	planet->geometry = NULL;
 	delete moon->geometry;
+	moon->geometry = NULL;
 
 	planet->destroy();
 
@@ -235,6 +257,7 @@ void SpaceGame::destroy()
 
 	overlays[0]->destroy();
 	delete overlays[1]->geometry;
+	overlays[1]->geometry = NULL;
 	overlays[1]->destroy();
 	overlays[2]->destroy();
 	overlays[3]->destroy();

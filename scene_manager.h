@@ -35,6 +35,7 @@ private:
 
 	Vector3* lut_buffer = NULL;
 
+
 	void renderFromCamera(CameraObject* camera);
 	void drawOverlay(CameraObject* camera);
 	void renderHierarchy(Object* root);
@@ -43,6 +44,10 @@ private:
 	void drawParticle(ParticleObject* obj);
 	void performPostProcessing(CameraObject* camera);
 	void updateLights();
+
+	unsigned int objects_drawn_last_frame = 0;
+	unsigned int triangles_drawn_last_frame = 0;
+	float current_fps = 0;
 public:
 	SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game);
 	SceneManager() = delete;

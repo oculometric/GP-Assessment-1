@@ -15,13 +15,7 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 
 void Object::destroy()
 {
-	for (size_t i = 0; i < children.getLength(); i++)
-	{
-		if (!children[i]);
-		children[i]->destroy();
-	}
-	removeFromParent(false);
-	delete this;
+	is_waiting_for_death = true;
 }
 
 void Object::removeFromParent(bool keep_world_transform)
@@ -35,8 +29,10 @@ void Object::removeFromParent(bool keep_world_transform)
 		index++;
 	}
 
-	parent->children.removeAt(index);
+	if (index < parent->children.getLength())
+		parent->children.removeAt(index);
 	parent = NULL;
+	
 }
 
 void Object::performPhysicsUpdate(float delta_time)
@@ -57,6 +53,16 @@ Object::Object(Vector3 position, Vector3 rotation, Vector3 scale)
 	local_position = position;
 	local_rotation = rotation;
 	local_scale = scale;
+}
+
+Object::~Object()
+{
+	for (size_t i = 0; i < children.getLength(); i++)
+	{
+		if (!children[i]);
+		children[i]->destroy();
+	}
+	removeFromParent(false);
 }
 
 ObjectType MeshObject::getType()
@@ -104,7 +110,6 @@ LightObject::LightObject(LightType _type, Vector3 colour, Vector3 position, Vect
 	specular_colour = colour;
 	ambient_colour = colour;
 	direction = _direction;
-	local_position = position;
 	enabled = true;
 
 	parent = NULL;
@@ -114,6 +119,19 @@ LightObject::LightObject(LightType _type, Vector3 colour, Vector3 position, Vect
 LightObject::LightObject()
 {
 	parent = NULL;
+}
+
+void LightObject::operator=(LightObject&& other)
+{
+	type = other.type;
+	diffuse_colour = other.diffuse_colour;
+	specular_colour = other.specular_colour;
+	ambient_colour = other.ambient_colour;
+	direction = other.direction;
+	local_position = other.local_position;
+	enabled = other.enabled;
+
+	parent = other.parent;
 }
 
 ObjectType TextObject::getType()

@@ -30,6 +30,7 @@ public:
 
 	LinkedList<Object*> children;
 	Object* parent = NULL;
+	bool is_waiting_for_death = false;
 
 	std::string name = "object";
 
@@ -42,6 +43,8 @@ public:
 	virtual ObjectType getType();
 
 	Object(Vector3 position = { 0,0,0 }, Vector3 rotation = { 0,0,0 }, Vector3 scale = {1,1,1});
+
+	~Object();
 };
 
 class MeshObject : public Object
@@ -94,6 +97,8 @@ public:
 
 	LightObject(LightType _type, Vector3 colour, Vector3 position = { 0,0,0 }, Vector3 _direction = { 0,0,0 });
 	LightObject();
+
+	void operator=(LightObject&& other);
 };
 
 class TextObject : public Object

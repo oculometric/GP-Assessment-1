@@ -49,6 +49,9 @@ void MuseumGame::start()
 	scene_manager->addObject(earth_obj);
 	scene_manager->addObject(checker_obj);
 	scene_manager->getCamera()->local_rotation = Vector3{ -90, 0, 0 };
+
+	player_light = scene_manager->getLight(1);
+	player_light = new LightObject(LightType::POSITIONAL, Vector3{ 1.0f, 1.0f, 1.0f });
 }
 
 void MuseumGame::update(float delta_time)
