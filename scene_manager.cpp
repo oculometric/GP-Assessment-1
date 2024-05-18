@@ -19,7 +19,11 @@ inline float randf()
 	return (((float)rand() / (float)RAND_MAX) * 2.0f) - 1.0f;
 }
 
-SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game)
+SceneManager::SceneManager()
+{
+}
+
+void SceneManager::initialise(int argc, char* argv[], unsigned int x, unsigned int y)
 {
 	glut_callback_handlers::init(this);
 
@@ -33,8 +37,8 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 	// core scene initialisation
 	world_root = new Object();
 	world_root->name = "root";
-	active_camera = new CameraObject(90.0f, 0.01f, 64.0f, (float)x/(float)y, Vector3{ 0,-1,1 }, Vector3{ -23.0f,0,0 });
-	world_root->addChild(active_camera, true);
+	active_camera = new CameraObject(90.0f, 0.01f, 64.0f, (float)x / (float)y, Vector3{ 0,-1,1 }, Vector3{ -23.0f,0,0 });
+	world_root->addChild(active_camera);
 
 	overlay_root = new Object();
 	overlay_root->name = "overlay";
@@ -93,11 +97,11 @@ SceneManager::SceneManager(int argc, char* argv[], unsigned int x, unsigned int 
 		}
 	}
 	delete lut_input_buffer;
+}
 
-	game_manager = game;
-	game_manager->init(this);
-
-	game_manager->start();
+void SceneManager::startMainloop(GameManager* game)
+{
+	setGameManager(game);
 
 	// aaaaaand, go!
 	glutMainLoop();
@@ -241,7 +245,7 @@ void SceneManager::addObject(Object* obj)
 {
 	if (!obj) return;
 
-	world_root->addChild(obj, true);
+	world_root->addChild(obj);
 }
 
 void SceneManager::renderFromCamera(CameraObject* camera)
@@ -475,7 +479,7 @@ void SceneManager::drawOverlay(CameraObject* camera)
 			glColor3f(0.2f, 0.9f, 0.1f);
 			glBegin(GL_LINES);
 			{
-				for (int i = 0; i < child_mesh_object->geometry->trisCount() - 1; i++)
+				for (size_t i = 0; i < child_mesh_object->geometry->trisCount() - 1; i++)
 				{
 					Vector3 vert_a = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i]];
 					Vector3 vert_b = child_mesh_object->geometry->vertices[child_mesh_object->geometry->triangles[i + 1]];
@@ -496,7 +500,6 @@ void SceneManager::drawOverlay(CameraObject* camera)
 		}
 	}
 
-	// TODO: draw scene stats
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glRasterPos2f(-0.6f, 0.8f);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)("objects: " + std::to_string(objects_drawn_last_frame)).c_str());
@@ -663,9 +666,9 @@ void SceneManager::drawParticle(ParticleObject* obj)
 
 Vector3 sampleLUT(Vector3* lut, Vector3 colour)
 {
-	int x_index = min(floor(colour.x * 64), 63);
-	int y_index = min(floor(colour.y * 64), 63);
-	int z_index = min(floor(colour.z * 64), 63);
+	int x_index = min((int)floor(colour.x * 64), 63);
+	int y_index = min((int)floor(colour.y * 64), 63);
+	int z_index = min((int)floor(colour.z * 64), 63);
 	return lut[x_index + (y_index * 64) + (z_index * 64 * 64)];
 }
 
@@ -836,7 +839,7 @@ void SceneManager::addOverlayObject(Object* obj)
 {
 	if (!obj) return;
 
-	overlay_root->addChild(obj, true);
+	overlay_root->addChild(obj);
 }
 
 void SceneManager::togglePostprocess()
@@ -847,6 +850,5 @@ void SceneManager::togglePostprocess()
 void SceneManager::setGameManager(GameManager* game)
 {
 	game_manager = game;
-	game_manager->init(this);
-	game_manager->start();
+	game_manager->start(this);
 }

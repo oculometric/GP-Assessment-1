@@ -34,9 +34,9 @@ public:
 
 	std::string name = "object";
 
-	void addChild(Object* obj, bool keep_world_transform);
+	void addChild(Object* obj);
 	void destroy();
-	void removeFromParent(bool keep_world_transform);
+	void removeFromParent();
 
 	void performPhysicsUpdate(float delta_time);
 

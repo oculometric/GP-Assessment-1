@@ -1,12 +1,12 @@
 #include "game_manager.h"
 #include "scene_manager.h"
 
-void GameManager::init(SceneManager* manager)
+void GameManager::init() { }
+
+void GameManager::start(SceneManager* manager)
 {
 	scene_manager = manager;
 }
-
-void GameManager::start() { }
 
 void GameManager::update(float delta_time) { }
 

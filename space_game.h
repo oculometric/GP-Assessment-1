@@ -6,14 +6,19 @@
 
 #include <vector>
 
-void switchRealities();
-
 class SpaceGame : public GameManager
 {
 private:
 	Vector3 camera_local_velocity;
 	MeshObject* ship;
 	Object* camera_focus;
+	CameraObject* camera;
+	Object* scene_parent;
+
+	MeshObject* overlay_ship;
+	MeshObject* spinning_ico_0;
+	MeshObject* spinning_ico_1;
+	MeshObject* spinning_ico_2;
 
 	Vector3* asteroid_points;
 	size_t num_asteroid_points;
@@ -31,10 +36,13 @@ private:
 	MeshObject* moon;
 	MeshObject* overlays[4];
 
+	Texture* skybox_texture;
+
 	float acceleration = 0.0f;
 
 public:
-	void start() override;
+	void init() override;
+	void start(SceneManager* manager) override;
 	void update(float delta_time) override;
 	void mouseMove(int delta_x, int delta_y, bool down) override;
 	void keyPressed(unsigned char key, bool down) override;

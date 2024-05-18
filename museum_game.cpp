@@ -12,9 +12,21 @@
 
 using namespace std;
 
-void MuseumGame::start()
+void MuseumGame::start(SceneManager* manager)
 {
-	cout << "museum start" << endl;
+	scene_manager = manager;
+
+	// FIXME: replace camera
+	scene_manager->addObject(scene_parent);
+	scene_manager->getCamera()->local_rotation = Vector3{ -90, 0, 0 };
+
+	LightObject* light_1 = scene_manager->getLight(1);
+	*light_1 = LightObject(LightType::POSITIONAL, Vector3{ 1.0f, 1.0f, 1.0f });
+}
+
+void MuseumGame::init()
+{
+	scene_parent = new Object();
 
 	Texture* concrete_tex = new Texture();
 	Texture* wall_tex = new Texture();
@@ -44,14 +56,10 @@ void MuseumGame::start()
 	MeshObject* earth_obj = new MeshObject(earth_mesh);
 	MeshObject* checker_obj = new MeshObject(checker_mesh);
 
-	scene_manager->addObject(concrete_obj);
-	scene_manager->addObject(wall_obj);
-	scene_manager->addObject(earth_obj);
-	scene_manager->addObject(checker_obj);
-	scene_manager->getCamera()->local_rotation = Vector3{ -90, 0, 0 };
-
-	player_light = scene_manager->getLight(1);
-	player_light = new LightObject(LightType::POSITIONAL, Vector3{ 1.0f, 1.0f, 1.0f });
+	scene_parent->addChild(concrete_obj);
+	scene_parent->addChild(wall_obj);
+	scene_parent->addChild(earth_obj);
+	scene_parent->addChild(checker_obj);
 }
 
 void MuseumGame::update(float delta_time)

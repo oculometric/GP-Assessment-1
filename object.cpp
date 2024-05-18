@@ -1,6 +1,6 @@
 #include "object.h"
 
-void Object::addChild(Object* obj, bool keep_world_transform)
+void Object::addChild(Object* obj)
 {
 	// if the child already has a parent, abort
 	if (obj->parent != NULL) return;
@@ -8,9 +8,6 @@ void Object::addChild(Object* obj, bool keep_world_transform)
 	// establish relationship
 	obj->parent = this;
 	children.pushBack(obj);
-
-	// alter transform
-	// TODO: apply inverse transform of this to child transform to compensate for new relationship
 }
 
 void Object::destroy()
@@ -18,11 +15,11 @@ void Object::destroy()
 	is_waiting_for_death = true;
 }
 
-void Object::removeFromParent(bool keep_world_transform)
+void Object::removeFromParent()
 {
 	if (parent == NULL) return;
 
-	int index = 0;
+	size_t index = 0;
 	for (index = 0; index < parent->children.getLength(); index++)
 	{
 		if (parent->children[index] == this) break;
@@ -59,10 +56,10 @@ Object::~Object()
 {
 	for (size_t i = 0; i < children.getLength(); i++)
 	{
-		if (!children[i]);
-		children[i]->destroy();
+		if (children[i])
+			children[i]->destroy();
 	}
-	removeFromParent(false);
+	removeFromParent();
 }
 
 ObjectType MeshObject::getType()

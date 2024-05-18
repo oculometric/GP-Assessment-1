@@ -33,7 +33,7 @@ namespace glut_callback_handlers
 		switch (button)
 		{
 		case 1:
-			switchRealities();
+			std::cout << "TODO:THIS" << std::endl;
 			break;
 		case 2:
 			game_global->togglePostprocess();

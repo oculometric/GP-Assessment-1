@@ -35,7 +35,6 @@ private:
 
 	Vector3* lut_buffer = NULL;
 
-
 	void renderFromCamera(CameraObject* camera);
 	void drawOverlay(CameraObject* camera);
 	void renderHierarchy(Object* root);
@@ -49,8 +48,10 @@ private:
 	unsigned int triangles_drawn_last_frame = 0;
 	float current_fps = 0;
 public:
-	SceneManager(int argc, char* argv[], unsigned int x, unsigned int y, GameManager* game);
-	SceneManager() = delete;
+	SceneManager();
+
+	void initialise(int argc, char* argv[], unsigned int x, unsigned int y);
+	void startMainloop(GameManager* game);
 
 	// callbacks, don't touch these
 
@@ -70,6 +71,7 @@ public:
 	inline LightObject* getLight(unsigned char index) { if (index >= 8) return NULL; else return lights + index; }
 
 	void setGameManager(GameManager* game);
+	inline void setCamera(CameraObject* new_camera) { active_camera = new_camera; }
 
 	~SceneManager();
 };
