@@ -56,7 +56,7 @@ void SpaceGame::start(SceneManager* manager)
 void SpaceGame::update(float delta_time)
 {
 	// handle camera movement
-	Vector3 angle = scene_manager->getCamera()->local_rotation * ((float)M_PI / 180.0f);
+	Vector3 angle = camera->local_rotation * ((float)M_PI / 180.0f);
 	Matrix3 rot_x = { 1,  0,             0,
 						0,  cos(angle.x), -sin(angle.x),
 						0,  sin(angle.x),  cos(angle.x) };
@@ -71,7 +71,7 @@ void SpaceGame::update(float delta_time)
 
 	// apply y, x, z rotations
 	Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
-	scene_manager->getCamera()->local_position += camera_global_velocity * Vector3{1,-1,1} * delta_time;
+	camera->local_position += camera_global_velocity * Vector3{1,-1,1} * delta_time;
 
 	// handle acceleration, in ship direction
 	angle = ship->local_rotation * ((float)M_PI / 180.0f);
@@ -97,10 +97,9 @@ void SpaceGame::update(float delta_time)
 	ship->velocity_lin *= powf(0.9f, delta_time);
 	if (acceleration > 0.1f)
 	{
-		std::cout << "spawning particle" << std::endl;
 		ParticleObject* part = new ParticleObject(2.0f, ship->local_position, { 0,0,0 }, { 2.0f, 2.0f, 2.0f }, particle_mat);
 		part->velocity_lin = { 0,0,-9 };
-		scene_manager->addObject(part);
+		scene_parent->addChild(part);
 	}
 
 	position_text->text = std::string("SHIP POS: ") + std::to_string(ship->local_position.x) + " " + std::to_string(ship->local_position.y) + " " + std::to_string(ship->local_position.z);
@@ -207,39 +206,16 @@ void SpaceGame::init()
 
 void SpaceGame::destroy()
 {
-	// FIXME: remove this
-	delete ship->geometry->material;
-	delete ship->geometry;
-	delete asteroid_mesh->material;
-	delete asteroid_mesh;
-	delete particle_mat;
-	position_text->destroy();
-	velocity_text->destroy();
-	ship_rot_text->destroy();
-	cam_rot_text->destroy();
-	delete planet->geometry->material;
-	planet->geometry->material = NULL;
-	delete planet->geometry;
-	planet->geometry = NULL;
-	delete moon->geometry;
-	moon->geometry = NULL;
+	overlay_ship->removeFromParent();
+	spinning_ico_0->removeFromParent();
+	spinning_ico_1->removeFromParent();
+	spinning_ico_2->removeFromParent();
+	position_text->removeFromParent();
+	velocity_text->removeFromParent();
+	ship_rot_text->removeFromParent();
+	cam_rot_text->removeFromParent();
 
-	planet->destroy();
+	scene_manager->setCamera(nullptr);
 
-	CameraObject* cam = scene_manager->getCamera();
-	cam->removeFromParent();
-	scene_manager->addObject(cam);
-
-	camera_focus->destroy();
-
-	ship->destroy();
-
-	overlays[0]->destroy();
-	delete overlays[1]->geometry;
-	overlays[1]->geometry = NULL;
-	overlays[1]->destroy();
-	overlays[2]->destroy();
-	overlays[3]->destroy();
-
-	for (Object* asteroid : loaded_asteroids) asteroid->destroy();
+	scene_parent->removeFromParent();
 }

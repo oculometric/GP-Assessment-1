@@ -98,7 +98,7 @@ public:
 	LightObject(LightType _type, Vector3 colour, Vector3 position = { 0,0,0 }, Vector3 _direction = { 0,0,0 });
 	LightObject();
 
-	void operator=(LightObject&& other);
+	void operator=(LightObject&& other) noexcept;
 };
 
 class TextObject : public Object

@@ -28,16 +28,5 @@ namespace glut_callback_handlers
 
 	void resizeWindow(int x, int y) { if (game_global) game_global->resizeWindow(x, y); }
 
-	void menuFunc(int button)
-	{
-		switch (button)
-		{
-		case 1:
-			std::cout << "TODO:THIS" << std::endl;
-			break;
-		case 2:
-			game_global->togglePostprocess();
-			break;
-		}
-	}
+	void menuFunc(int button) { game_global->menuAction(button); }
 }

@@ -10,33 +10,33 @@ class SpaceGame : public GameManager
 {
 private:
 	Vector3 camera_local_velocity;
-	MeshObject* ship;
-	Object* camera_focus;
-	CameraObject* camera;
-	Object* scene_parent;
+	MeshObject* ship = nullptr;
+	Object* camera_focus = nullptr;
+	CameraObject* camera = nullptr;
+	Object* scene_parent = nullptr;
 
-	MeshObject* overlay_ship;
-	MeshObject* spinning_ico_0;
-	MeshObject* spinning_ico_1;
-	MeshObject* spinning_ico_2;
+	MeshObject* overlay_ship = nullptr;
+	MeshObject* spinning_ico_0 = nullptr;
+	MeshObject* spinning_ico_1 = nullptr;
+	MeshObject* spinning_ico_2 = nullptr;
 
-	Vector3* asteroid_points;
+	Vector3* asteroid_points = nullptr;
 	size_t num_asteroid_points;
 	std::vector<MeshObject*> loaded_asteroids;
-	Mesh* asteroid_mesh;
+	Mesh* asteroid_mesh = nullptr;
 
-	TextObject* position_text;
-	TextObject* velocity_text;
-	TextObject* ship_rot_text;
-	TextObject* cam_rot_text;
+	TextObject* position_text = nullptr;
+	TextObject* velocity_text = nullptr;
+	TextObject* ship_rot_text = nullptr;
+	TextObject* cam_rot_text = nullptr;
 
-	Material* particle_mat;
+	Material* particle_mat = nullptr;
 
-	MeshObject* planet;
-	MeshObject* moon;
-	MeshObject* overlays[4];
+	MeshObject* planet = nullptr;
+	MeshObject* moon = nullptr;
+	MeshObject* overlays[4] = { nullptr };
 
-	Texture* skybox_texture;
+	Texture* skybox_texture = nullptr;
 
 	float acceleration = 0.0f;
 

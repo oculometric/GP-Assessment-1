@@ -16,9 +16,8 @@ void MuseumGame::start(SceneManager* manager)
 {
 	scene_manager = manager;
 
-	// FIXME: replace camera
 	scene_manager->addObject(scene_parent);
-	scene_manager->getCamera()->local_rotation = Vector3{ -90, 0, 0 };
+	scene_manager->setCamera(camera);
 
 	LightObject* light_1 = scene_manager->getLight(1);
 	*light_1 = LightObject(LightType::POSITIONAL, Vector3{ 1.0f, 1.0f, 1.0f });
@@ -51,15 +50,20 @@ void MuseumGame::init()
 	earth_mesh->material = earth_mat;
 	checker_mesh->material = checker_mat;
 
-	MeshObject* concrete_obj = new MeshObject(concrete_mesh);
-	MeshObject* wall_obj = new MeshObject(wall_mesh);
-	MeshObject* earth_obj = new MeshObject(earth_mesh);
-	MeshObject* checker_obj = new MeshObject(checker_mesh);
+	concrete_obj = new MeshObject(concrete_mesh);
+	wall_obj = new MeshObject(wall_mesh);
+	earth_obj = new MeshObject(earth_mesh);
+	checker_obj = new MeshObject(checker_mesh);
 
 	scene_parent->addChild(concrete_obj);
 	scene_parent->addChild(wall_obj);
 	scene_parent->addChild(earth_obj);
 	scene_parent->addChild(checker_obj);
+
+	camera = new CameraObject(95.0f, 0.1f, 100.0f);
+	camera->local_rotation = Vector3{ -90, 0, 0 };
+
+	scene_parent->addChild(camera);
 }
 
 void MuseumGame::update(float delta_time)
@@ -145,4 +149,10 @@ void MuseumGame::keyPressed(unsigned char key, bool down)
 		else
 			control_key_states &= ~0b00100000;
 	}
+}
+
+void MuseumGame::destroy()
+{
+	scene_parent->removeFromParent();
+	scene_manager->setCamera(nullptr);
 }

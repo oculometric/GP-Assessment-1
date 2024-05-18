@@ -64,6 +64,7 @@ public:
 	void frameRefresh(int value);
 	void resizeWindow(int x, int y);
 	void togglePostprocess();
+	void menuAction(int index);
 
 	inline CameraObject* getCamera() { return active_camera; }
 	void addObject(Object* obj);

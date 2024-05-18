@@ -16,6 +16,8 @@ void GameManager::mousePressed(int button, bool down, int pos_x, int pos_y) { }
 
 void GameManager::keyPressed(unsigned char key, bool down) { }
 
+void GameManager::destroy() { }
+
 GameManager::GameManager()
 {
 	scene_manager = NULL;

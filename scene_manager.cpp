@@ -8,6 +8,7 @@
 #include "matrix3.h"
 #include <queue>
 #include <string>
+#include "multi_game.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -313,7 +314,8 @@ void SceneManager::renderHierarchy(Object* root)
 	// iterate over children, calling renderHierarchy on each
 	for (size_t i = 0; i < root->children.getLength(); i++)
 	{
-		renderHierarchy(root->children[i]);
+		if (!root->children[i]->is_waiting_for_death)
+			renderHierarchy(root->children[i]);
 	}
 	
 	// pop matrix
@@ -845,6 +847,20 @@ void SceneManager::addOverlayObject(Object* obj)
 void SceneManager::togglePostprocess()
 {
 	skip_postprocess = !skip_postprocess;
+}
+
+void SceneManager::menuAction(int index)
+{
+	switch (index)
+	{
+	case 1:
+		game_manager->destroy();
+		setGameManager(nextGame());
+		break;
+	case 2:
+		togglePostprocess();
+		break;
+	}
 }
 
 void SceneManager::setGameManager(GameManager* game)

@@ -1,6 +1,7 @@
 #include "scene_manager.h"
 #include "space_game.h"
 #include "museum_game.h"
+#include "multi_game.h"
 
 int main(int argc, char* argv[])
 {
@@ -11,6 +12,9 @@ int main(int argc, char* argv[])
 	MuseumGame* mg = new MuseumGame();
 	sg->init();
 	mg->init();
+
+	setGame(0, sg);
+	setGame(1, mg);
 
 	s.startMainloop(sg);
 }

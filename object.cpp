@@ -3,7 +3,7 @@
 void Object::addChild(Object* obj)
 {
 	// if the child already has a parent, abort
-	if (obj->parent != NULL) return;
+	if (obj->parent != nullptr) return;
 
 	// establish relationship
 	obj->parent = this;
@@ -17,7 +17,7 @@ void Object::destroy()
 
 void Object::removeFromParent()
 {
-	if (parent == NULL) return;
+	if (parent == nullptr) return;
 
 	size_t index = 0;
 	for (index = 0; index < parent->children.getLength(); index++)
@@ -28,8 +28,7 @@ void Object::removeFromParent()
 
 	if (index < parent->children.getLength())
 		parent->children.removeAt(index);
-	parent = NULL;
-	
+	parent = nullptr;
 }
 
 void Object::performPhysicsUpdate(float delta_time)
@@ -45,7 +44,7 @@ ObjectType Object::getType()
 
 Object::Object(Vector3 position, Vector3 rotation, Vector3 scale)
 {
-	parent = NULL;
+	parent = nullptr;
 
 	local_position = position;
 	local_rotation = rotation;
@@ -71,7 +70,7 @@ MeshObject::MeshObject(Mesh* _geometry, Vector3 position, Vector3 rotation, Vect
 {
 	geometry = _geometry;
 	
-	parent = NULL;
+	parent = nullptr;
 	local_position = position;
 	local_rotation = rotation;
 	local_scale = scale;
@@ -89,7 +88,7 @@ CameraObject::CameraObject(float _fov_degrees, float near, float far, float aspe
 	far_clip = far;
 	aspect_ratio = aspect;
 	
-	parent = NULL;
+	parent = nullptr;
 	local_position = position;
 	local_rotation = rotation;
 	local_scale = scale;
@@ -109,16 +108,16 @@ LightObject::LightObject(LightType _type, Vector3 colour, Vector3 position, Vect
 	direction = _direction;
 	enabled = true;
 
-	parent = NULL;
+	parent = nullptr;
 	local_position = position;
 }
 
 LightObject::LightObject()
 {
-	parent = NULL;
+	parent = nullptr;
 }
 
-void LightObject::operator=(LightObject&& other)
+void LightObject::operator=(LightObject&& other) noexcept
 {
 	type = other.type;
 	diffuse_colour = other.diffuse_colour;
@@ -154,7 +153,7 @@ ParticleObject::ParticleObject(float _lifetime, Vector3 position, Vector3 rotati
 	lifetime = _lifetime;
 	material = mat;
 
-	parent = NULL;
+	parent = nullptr;
 	local_position = position;
 	local_rotation = rotation;
 	local_scale = scale;
