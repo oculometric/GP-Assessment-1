@@ -34,7 +34,6 @@ private:
 
 	MeshObject* planet = nullptr;
 	MeshObject* moon = nullptr;
-	MeshObject* overlays[4] = { nullptr };
 
 	Texture* skybox_texture = nullptr;
 

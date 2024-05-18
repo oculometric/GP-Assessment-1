@@ -3,7 +3,11 @@
 void Object::addChild(Object* obj)
 {
 	// if the child already has a parent, abort
-	if (obj->parent != nullptr) return;
+	if (obj->parent != nullptr)
+	{
+		std::cout << "warning: attempt to reparent a child who already has a parent" << std::endl;
+		return;
+	}
 
 	// establish relationship
 	obj->parent = this;
@@ -23,11 +27,12 @@ void Object::removeFromParent()
 	for (index = 0; index < parent->children.getLength(); index++)
 	{
 		if (parent->children[index] == this) break;
-		index++;
 	}
 
 	if (index < parent->children.getLength())
 		parent->children.removeAt(index);
+	else
+		std::cout << "warning: unable to find child in parent's children list" << std::endl;
 	parent = nullptr;
 }
 
@@ -56,7 +61,7 @@ Object::~Object()
 	for (size_t i = 0; i < children.getLength(); i++)
 	{
 		if (children[i])
-			children[i]->destroy();
+			delete children[i];
 	}
 	removeFromParent();
 }

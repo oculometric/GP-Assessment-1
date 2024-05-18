@@ -118,6 +118,8 @@ void SceneManager::display()
 		renderFromCamera(active_camera);
 		performPostProcessing(active_camera);
 	}
+	else
+		std::cout << "warning: no camera currently rendering" << std::endl;
 
 	glFlush();
 }
@@ -202,7 +204,15 @@ void SceneManager::frameRefresh(int value)
 		destruction_queue.pop();
 
 		if (obj->is_waiting_for_death)
-			delete obj;
+		{
+			std::cout << "deleting object " << obj << std::endl;
+			if (obj->is_waiting_for_death == 1)
+			{
+				std::cout << "    parented to: " << obj->parent << std::endl;
+				delete obj;
+			}
+			else std::cout << "warning: " << obj << " was marked for deletion twice! was it parented to two different things?" << std::endl;
+		}
 		else
 			for (size_t i = 0; i < obj->children.getLength(); i++) destruction_queue.push(obj->children[i]);
 	}

@@ -191,10 +191,6 @@ void SpaceGame::init()
 	spinning_ico_0 = new MeshObject(new Mesh("icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	spinning_ico_1 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.6f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	spinning_ico_2 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.4f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
-	overlays[0] = overlay_ship;
-	overlays[1] = spinning_ico_0;
-	overlays[2] = spinning_ico_1;
-	overlays[3] = spinning_ico_2;
 	position_text = new TextObject(Vector2{ 0.0f, -0.75f }, std::string("SHIP POS: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
 	velocity_text = new TextObject(Vector2{ 0.0f, -0.80f }, std::string("SHIP VEL: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
 	ship_rot_text = new TextObject(Vector2{ 0.0f, -0.85f }, std::string("SHIP ROT: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);
