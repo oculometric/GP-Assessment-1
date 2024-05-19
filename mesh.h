@@ -12,6 +12,8 @@ public:
 	uint32_t* triangles;		// three per triangle
 	Vector2* uvs;				// three per triangle
 	Vector3* vertex_normals;	// three per triangle
+	Vector3 bounds_min;
+	Vector3 bounds_max;
 
 	Material* material = NULL;
 

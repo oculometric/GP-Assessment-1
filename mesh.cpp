@@ -217,11 +217,28 @@ Mesh::Mesh(std::string path)
     if (found_uvs > 0) delete[] uvs_temp;
     if (found_vnorms > 0) delete[] vns_temp;
 
+    bounds_min = Vector3{ 0,0,0 };
+    bounds_max = Vector3{ 0,0,0 };
+    for (size_t i = 0; i < num_verts; i++)
+    {
+        Vector3 vert = vertices[i];
+
+        if (vert.x < bounds_min.x) bounds_min.x = vert.x;
+        else if (vert.x > bounds_max.x) bounds_max.x = vert.x;
+
+        if (vert.y < bounds_min.y) bounds_min.y = vert.y;
+        else if (vert.y > bounds_max.y) bounds_max.y = vert.y;
+
+        if (vert.z < bounds_min.z) bounds_min.z = vert.z;
+        else if (vert.z > bounds_max.z) bounds_max.z = vert.z;
+    }
+
     std::cout << "loaded object " << path << std::endl;
     std::cout << "    tris: " << found_triangles << std::endl;
     std::cout << "    verts: " << found_vertices << std::endl;
     std::cout << "    uvs: " << found_uvs << std::endl;
     std::cout << "    vnorms: " << found_vnorms << std::endl;
+    std::cout << "    bounds: " << bounds_min << " : " << bounds_max << std::endl;
 }
 
 Mesh::~Mesh()

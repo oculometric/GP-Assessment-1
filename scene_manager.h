@@ -31,6 +31,7 @@ private:
 	int viewport_width = 0;
 	int viewport_height = 0;
 	bool skip_postprocess = false;
+	bool debug_view = false;
 	unsigned int post_process_texture_id = -1;
 
 	Vector3* lut_buffer = NULL;
@@ -40,6 +41,7 @@ private:
 	void renderHierarchy(Object* root);
 	void drawEnvironmentCubemap(CameraObject* camera);
 	void drawObject(MeshObject* obj);
+	void drawObjectDebug(Object* obj);
 	void drawParticle(ParticleObject* obj);
 	void performPostProcessing(CameraObject* camera);
 	void updateLights();

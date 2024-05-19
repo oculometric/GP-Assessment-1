@@ -65,6 +65,7 @@ void SceneManager::initialise(int argc, char* argv[], unsigned int x, unsigned i
 	glutSetMenu(0);
 	glutAddMenuEntry("switch realities", 1);
 	glutAddMenuEntry("toggle postprocessing", 2);
+	glutAddMenuEntry("toggle debug view", 3);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	// enable depth buffer/testing
 	glEnable(GL_DEPTH_TEST);
@@ -205,13 +206,10 @@ void SceneManager::frameRefresh(int value)
 
 		if (obj->is_waiting_for_death)
 		{
-			std::cout << "deleting object " << obj << std::endl;
 			if (obj->is_waiting_for_death == 1)
-			{
-				std::cout << "    parented to: " << obj->parent << std::endl;
 				delete obj;
-			}
-			else std::cout << "warning: " << obj << " was marked for deletion twice! was it parented to two different things?" << std::endl;
+			else
+				std::cout << "warning: " << obj << " was deleted but remains in the scene! this is very bad" << std::endl;
 		}
 		else
 			for (size_t i = 0; i < obj->children.getLength(); i++) destruction_queue.push(obj->children[i]);
@@ -320,6 +318,7 @@ void SceneManager::renderHierarchy(Object* root)
 		drawObject((MeshObject*)root);
 	if (root->getType() == ObjectType::PARTICLE)
 		drawParticle((ParticleObject*)root);
+	if (debug_view) drawObjectDebug(root);
 
 	// iterate over children, calling renderHierarchy on each
 	for (size_t i = 0; i < root->children.getLength(); i++)
@@ -362,6 +361,8 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_FOG);
 	glColor3f(1.5f, 1.5f, 1.5f);
+
+	glPolygonMode(GL_FRONT, GL_FILL);
 	
 	// inscribed dimension of cube
 	float inscribed = camera->far_clip / sqrt(3.0f);
@@ -561,6 +562,10 @@ void SceneManager::drawObject(MeshObject* obj)
 	if (!obj->geometry) return;
 	if (obj->geometry->triangles == NULL || obj->geometry->vertices == NULL) return;
 
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glColor3f(1, 1, 1);
+
 	if (obj->geometry->material)
 	{
 		MaterialMode mode = obj->geometry->material->getMode();
@@ -600,7 +605,7 @@ void SceneManager::drawObject(MeshObject* obj)
 	glMaterialfv(GL_FRONT, GL_EMISSION, colour);
 
 	// fill from front, draw as lines from back
-	glPolygonMode(GL_FRONT, GL_FILL);
+	glPolygonMode(GL_FRONT, debug_view ? GL_LINE : GL_FILL);
 	glPolygonMode(GL_BACK, GL_LINE);
 
 	// draw triangle mesh
@@ -610,6 +615,7 @@ void SceneManager::drawObject(MeshObject* obj)
 		Vector3 vert = obj->geometry->vertices[obj->geometry->triangles[i]];
 		Vector3 normal = obj->geometry->vertex_normals[i];
 		Vector2 uv = obj->geometry->uvs[i];
+
 
 		triangles_drawn_last_frame++;
 
@@ -622,10 +628,85 @@ void SceneManager::drawObject(MeshObject* obj)
 	glEnable(GL_LIGHTING);
 }
 
+void SceneManager::drawObjectDebug(Object* obj)
+{
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
+
+	glBegin(GL_LINES);
+	{
+		glColor3f(1, 0, 0);
+		glVertex3f(0, 0, 0);
+		glVertex3f(1, 0, 0);
+
+		glColor3f(0, 1, 0);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 1, 0);
+
+		glColor3f(0, 0, 1);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0, 1);
+	}
+	glEnd();
+
+	if (obj->getType() == ObjectType::MESH)
+	{
+		MeshObject* mobj = (MeshObject*)obj;
+		if (!mobj->geometry) return;
+		Vector3 b_min = mobj->geometry->bounds_min;
+		Vector3 b_max = mobj->geometry->bounds_max;
+		glBegin(GL_LINES);
+		{
+			glColor3f(1, 0, 1);
+
+			// edges on the -z side of the box
+			glVertex3f(b_min.x, b_min.y, b_min.z);
+			glVertex3f(b_max.x, b_min.y, b_min.z);
+
+			glVertex3f(b_min.x, b_min.y, b_min.z);
+			glVertex3f(b_min.x, b_max.y, b_min.z);
+
+			glVertex3f(b_max.x, b_min.y, b_min.z);
+			glVertex3f(b_max.x, b_max.y, b_min.z);
+
+			glVertex3f(b_min.x, b_max.y, b_min.z);
+			glVertex3f(b_max.x, b_max.y, b_min.z);
+
+			// edges on the +z side of the box
+			glVertex3f(b_min.x, b_min.y, b_max.z);
+			glVertex3f(b_max.x, b_min.y, b_max.z);
+
+			glVertex3f(b_min.x, b_min.y, b_max.z);
+			glVertex3f(b_min.x, b_max.y, b_max.z);
+
+			glVertex3f(b_max.x, b_min.y, b_max.z);
+			glVertex3f(b_max.x, b_max.y, b_max.z);
+
+			glVertex3f(b_min.x, b_max.y, b_max.z);
+			glVertex3f(b_max.x, b_max.y, b_max.z);
+			
+			// z-aligned edges (the leftovers)
+			glVertex3f(b_min.x, b_min.y, b_min.z);
+			glVertex3f(b_min.x, b_min.y, b_max.z);
+
+			glVertex3f(b_max.x, b_min.y, b_min.z);
+			glVertex3f(b_max.x, b_min.y, b_max.z);
+
+			glVertex3f(b_min.x, b_max.y, b_min.z);
+			glVertex3f(b_min.x, b_max.y, b_max.z);
+
+			glVertex3f(b_max.x, b_max.y, b_min.z);
+			glVertex3f(b_max.x, b_max.y, b_max.z);
+		}
+		glEnd();
+	}
+}
+
 void SceneManager::drawParticle(ParticleObject* obj)
 {
 	if (!obj->material) return;
 
+	glEnable(GL_LIGHTING);
 	MaterialMode mode = obj->material->getMode();
 	if (mode == MaterialMode::SOLID)
 	{
@@ -722,6 +803,7 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 	}
 
 	// write pixels back to the framebuffer
+	glEnable(GL_TEXTURE_2D);
 	if (post_process_texture_id == -1)
 		glGenTextures(1, &post_process_texture_id);
 	glBindTexture(GL_TEXTURE_2D, post_process_texture_id);
@@ -869,6 +951,9 @@ void SceneManager::menuAction(int index)
 		break;
 	case 2:
 		togglePostprocess();
+		break;
+	case 3:
+		debug_view = !debug_view;
 		break;
 	}
 }
