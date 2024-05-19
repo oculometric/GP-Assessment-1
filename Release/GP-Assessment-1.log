@@ -1,7 +1,19 @@
-﻿  scene_manager.cpp
+﻿  game_manager.cpp
+  glut_callback_handlers.cpp
+  main.cpp
+  material.cpp
+  mesh.cpp
+S:\Repository of Things\Coding\C & C++\GP-Assessment-1\mesh.cpp(157,23): warning C4018: '>=': signed/unsigned mismatch
+  multi_game.cpp
+  museum_game.cpp
+  object.cpp
+  point_generator.cpp
+  scene_manager.cpp
+  space_game.cpp
+  texture.cpp
+S:\Repository of Things\Coding\C & C++\GP-Assessment-1\texture.cpp(93,20): warning C4018: '<': signed/unsigned mismatch
   Generating code
-  0 of 425 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+  All 615 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
-  GP-Assessment-1.vcxproj -> C:\Users\maste\source\repos\GP-Assessment-1\Release\GP-Assessment-1.exe
+  GP-Assessment-1.vcxproj -> S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\GP-Assessment-1.exe
