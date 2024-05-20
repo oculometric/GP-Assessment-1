@@ -84,7 +84,7 @@ void SceneManager::initialise(int argc, char* argv[], unsigned int x, unsigned i
 	// enable normalisation, since we're scaling objects
 	glEnable(GL_NORMALIZE);
 
-	// load LUT
+	// load LUT, and rearrange it in memory to be faster to access later
 	Vector3* lut_input_buffer;
 	lut_buffer = new Vector3[512 * 512];
 	Texture::loadBMPRaw("lut.bmp", lut_input_buffer);
@@ -103,6 +103,7 @@ void SceneManager::initialise(int argc, char* argv[], unsigned int x, unsigned i
 
 void SceneManager::startMainloop(GameManager* game)
 {
+	// configure which game manager will be `start`-ed and receive events
 	setGameManager(game);
 
 	// aaaaaand, go!
@@ -114,6 +115,7 @@ void SceneManager::display()
 	// clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// if there is a camera, render from it
 	if (active_camera)
 	{
 		renderFromCamera(active_camera);
@@ -122,26 +124,31 @@ void SceneManager::display()
 	else
 		std::cout << "warning: no camera currently rendering" << std::endl;
 
+	// flush everything to the screen
 	glFlush();
 }
 
 void SceneManager::mouseMove(int x, int y)
 {
+	// calculate delta amount
 	int diff_x = x - last_mouse_x;
 	int diff_y = y - last_mouse_y;
 	last_mouse_x = x;
 	last_mouse_y = y;
 
+	// pass event to active game manager
 	game_manager->mouseMove(diff_x, diff_y, true);
 }
 
 void SceneManager::mouseMovePassive(int x, int y)
 {
+	// calculate delta amount
 	int diff_x = x - last_mouse_x;
 	int diff_y = y - last_mouse_y;
 	last_mouse_x = x;
 	last_mouse_y = y;
 
+	// pass event to active game manager
 	game_manager->mouseMove(diff_x, diff_y, false);
 }
 
@@ -166,8 +173,10 @@ void SceneManager::frameRefresh(int value)
 	auto time_now = std::chrono::high_resolution_clock::now();
 	float delta_time = std::chrono::duration_cast<std::chrono::nanoseconds>(time_now - last_frame_time).count() / 1000000000.0f;
 	last_frame_time = time_now;
+	// use this, and some of the previous fps, to calculate the framerate
 	current_fps = (0.2f * current_fps) + (1.0f / (0.8f * delta_time));
 
+	// pass update into the game manager
 	game_manager->update(delta_time);
 
 	// perform physics update for all objects (and tick particle lifetimes)
@@ -182,6 +191,7 @@ void SceneManager::frameRefresh(int value)
 		
 		if (obj->getType() == ObjectType::PARTICLE)
 		{
+			// if the object is a particle, update its alive time and possibly mark it for death
 			ParticleObject* pobj = (ParticleObject*)obj;
 			pobj->time_alive += delta_time;
 			if (pobj->time_alive >= pobj->lifetime)
@@ -190,13 +200,14 @@ void SceneManager::frameRefresh(int value)
 
 		for (size_t i = 0; i < obj->children.getLength(); i++) physics_tick_queue.push(obj->children[i]);
 	}
-	// and all overlay objects
+
+	// physics update for all overlay objects
 	for (size_t i = 0; i < overlay_root->children.getLength(); i++)
 	{
 		overlay_root->children[i]->performPhysicsUpdate(delta_time);
 	}
 
-	// check for dead objects and delete them
+	// check for dead objects and actually delete them
 	std::queue<Object*> destruction_queue;
 	destruction_queue.push(world_root);
 	while (!destruction_queue.empty())
@@ -215,7 +226,7 @@ void SceneManager::frameRefresh(int value)
 			for (size_t i = 0; i < obj->children.getLength(); i++) destruction_queue.push(obj->children[i]);
 	}
 
-	// check for errors
+	// poll openGL for errors
 	GLenum err;
 	while ((err = glGetError()) != GL_NO_ERROR)
 	{
@@ -239,14 +250,17 @@ void SceneManager::frameRefresh(int value)
 
 void SceneManager::resizeWindow(int x, int y)
 {
+	// update viewport
 	glViewport(0, 0, x, y);
 	viewport_width = x;
 	viewport_height = y;
+	// delete post-processing buffer, since it's now the wrong size; it will be recreated in the next post-processing call
 	if (post_processing_buffer)
 	{
 		delete[] post_processing_buffer;
 		post_processing_buffer = NULL;
 	}
+	// fix the camera aspect ratio
 	active_camera->aspect_ratio = (float)x / (float)y;
 }
 
@@ -271,6 +285,7 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	// walk up the camera parent stack and apply all of their transforms in reverse order, producing the overall world-to-camera transform
 	Object* camera_matrix_stack = camera;
 	while (camera_matrix_stack != NULL)
 	{
@@ -286,7 +301,7 @@ void SceneManager::renderFromCamera(CameraObject* camera)
 	// configure lights
 	updateLights();
 
-	// render the entire object heirarchy
+	// render the entire object heirarchy from the root, recurses for each child object
 	if (world_root)
 		renderHierarchy(world_root);
 
@@ -335,7 +350,7 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 {
 	if (!camera) return;
 
-	// compute a matrix for the camera's transform (i.e. world-to-view), but only its rotation
+	// compute a matrix for the camera's transform (i.e. world-to-view), but only its rotation, by walking up the camera-parent hierarchy
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	Object* camera_matrix_stack = camera;
@@ -348,6 +363,9 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 		camera_matrix_stack = camera_matrix_stack->parent;
 	}
 
+	// bind to the correct texture for the skybox
+	// in this case, the texture should be a 6 x 1 texture of square tiles, formatted in this order:
+	// +X -X +Z -Z +Y -Y
 	glBindTexture(GL_TEXTURE_2D, 0);
 	if (skybox)
 	{
@@ -364,8 +382,9 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 
 	glPolygonMode(GL_FRONT, GL_FILL);
 	
-	// inscribed dimension of cube
+	// inscribed dimension of cube whose corners are on the camera-far-clip-sphere
 	float inscribed = camera->far_clip / sqrt(3.0f);
+
 	// +X face
 	float max = 1.0f;
 	glBegin(GL_QUADS);
@@ -382,7 +401,6 @@ void SceneManager::drawEnvironmentCubemap(CameraObject* camera)
 	}
 	glEnd();
 	// +Y face (sampling +Z of cubemap)
-	//glColor3f(0.0f, 1.0f, 0.0f);
 	glBegin(GL_QUADS);
 	{
 		glTexCoord2f(4.0f / 6.0f, max);
@@ -474,6 +492,7 @@ void SceneManager::drawOverlay(CameraObject* camera)
 	// draw three lines on the three axes (coloured accordingly)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
+	// iterate over children. this does not recurse, only drawing the direct children of the overlay root
 	glMatrixMode(GL_MODELVIEW);
 	for (size_t i = 0; i < overlay_root->children.getLength(); i++)
 	{
@@ -483,6 +502,8 @@ void SceneManager::drawOverlay(CameraObject* camera)
 		{
 			MeshObject* child_mesh_object = (MeshObject*)child_object;
 			if (child_mesh_object->geometry == NULL) continue;
+
+			// apply transform
 			glPushMatrix();
 			glTranslatef(child_object->local_position.x * camera->aspect_ratio, child_object->local_position.y, 0);
 			glRotatef(-child_object->local_rotation.z, 0.0f, 0.0f, 1.0f);
@@ -490,6 +511,8 @@ void SceneManager::drawOverlay(CameraObject* camera)
 			glRotatef(-child_object->local_rotation.y, 0.0f, 1.0f, 0.0f);
 			glScalef(child_object->local_scale.x, child_object->local_scale.y, child_object->local_scale.z);
 			glColor3f(0.2f, 0.9f, 0.1f);
+
+			// draw geometry as a cool retro wireframe
 			glBegin(GL_LINES);
 			{
 				for (size_t i = 0; i < child_mesh_object->geometry->trisCount() - 1; i++)
@@ -501,10 +524,12 @@ void SceneManager::drawOverlay(CameraObject* camera)
 				}
 			}
 			glEnd();
+
 			glPopMatrix();
 		}
 		else if (child_object->getType() == ObjectType::TEXT)
 		{
+			// render text
 			TextObject* child_text_object = (TextObject*)child_object;
 			Vector3 col = child_text_object->colour;
 			glColor4f(col.x, col.y, col.z, 1.0f);
@@ -513,6 +538,8 @@ void SceneManager::drawOverlay(CameraObject* camera)
 		}
 	}
 
+	// render some extra text for info
+	// object drawing and triangles are tracked in various places
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glRasterPos2f(-0.6f, 0.8f);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)("objects: " + std::to_string(objects_drawn_last_frame)).c_str());
@@ -524,6 +551,7 @@ void SceneManager::drawOverlay(CameraObject* camera)
 	objects_drawn_last_frame = 0;
 	triangles_drawn_last_frame = 0;
 
+	// compute camera rotation-only transform (same as with skybox)
 	glTranslatef(-camera->aspect_ratio + 0.2f, 0.8f, -0.8f);
 	Object* camera_matrix_stack = camera;
 	while (camera_matrix_stack != NULL)
@@ -535,6 +563,7 @@ void SceneManager::drawOverlay(CameraObject* camera)
 		camera_matrix_stack = camera_matrix_stack->parent;
 	}
 
+	// draw axis lines in the top left of the screen
 	glBegin(GL_LINES);
 	{
 		glColor3f(1, 0, 0);
@@ -566,6 +595,7 @@ void SceneManager::drawObject(MeshObject* obj)
 	glEnable(GL_LIGHTING);
 	glColor3f(1, 1, 1);
 
+	// handle switching on/off textures and setting material colours
 	if (obj->geometry->material)
 	{
 		MaterialMode mode = obj->geometry->material->getMode();
@@ -604,7 +634,7 @@ void SceneManager::drawObject(MeshObject* obj)
 	float colour[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	glMaterialfv(GL_FRONT, GL_EMISSION, colour);
 
-	// fill from front, draw as lines from back
+	// fill from front, draw as lines from back. if we're in debug mode, draw it as wireframe
 	glPolygonMode(GL_FRONT, debug_view ? GL_LINE : GL_FILL);
 	glPolygonMode(GL_BACK, GL_LINE);
 
@@ -616,23 +646,23 @@ void SceneManager::drawObject(MeshObject* obj)
 		Vector3 normal = obj->geometry->vertex_normals[i];
 		Vector2 uv = obj->geometry->uvs[i];
 
-
-		triangles_drawn_last_frame++;
-
 		glTexCoord2f(uv.x, uv.y);
 		glNormal3f(normal.x, normal.y, normal.z);
 		glVertex3f(vert.x, vert.y, vert.z);
 	}
 	glEnd();
 
-	glEnable(GL_LIGHTING);
+	// track triangle count
+	triangles_drawn_last_frame += obj->geometry->trisCount() / 3;
 }
 
 void SceneManager::drawObjectDebug(Object* obj)
 {
+	// disable textures and lighting
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 
+	// draw axes at an object origin
 	glBegin(GL_LINES);
 	{
 		glColor3f(1, 0, 0);
@@ -651,6 +681,7 @@ void SceneManager::drawObjectDebug(Object* obj)
 
 	if (obj->getType() == ObjectType::MESH)
 	{
+		// draw a bounding box if the object is a mesh
 		MeshObject* mobj = (MeshObject*)obj;
 		if (!mobj->geometry) return;
 		Vector3 b_min = mobj->geometry->bounds_min;
@@ -707,6 +738,7 @@ void SceneManager::drawParticle(ParticleObject* obj)
 	if (!obj->material) return;
 
 	glEnable(GL_LIGHTING);
+	// handle material properties
 	MaterialMode mode = obj->material->getMode();
 	if (mode == MaterialMode::SOLID)
 	{
@@ -734,11 +766,13 @@ void SceneManager::drawParticle(ParticleObject* obj)
 		glColor3f(obj->material->colour.x, obj->material->colour.y, obj->material->colour.z);
 	}
 
+	// set visible from both sides
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);
 
 	glDisable(GL_CULL_FACE);
 	
+	// draw a quad
 	glBegin(GL_QUADS);
 	{
 		// TODO: make this always face the camera?
@@ -759,6 +793,7 @@ void SceneManager::drawParticle(ParticleObject* obj)
 
 Vector3 sampleLUT(Vector3* lut, Vector3 colour)
 {
+	// convert colour into an index into the LUT
 	int x_index = min((int)floor(colour.x * 64), 63);
 	int y_index = min((int)floor(colour.y * 64), 63);
 	int z_index = min((int)floor(colour.z * 64), 63);
@@ -774,9 +809,12 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 		post_processing_buffer = new float[viewport_width * viewport_height * 4];
 
 	// read pixels out of the framebuffer
+	// FIXME: the only way i can think to improve this is to read RGBA bytes instead of floats, which might accelerate the LUT sampling and data passing. maybe.
 	glReadPixels(0, 0, viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
 
+	// used for speeding up UV coordinate calculation
 	Vector2 viewport_divisor = Vector2{ 2.0f / (float)viewport_width, 2.0f / (float)viewport_height };
+
 	// loop over pixels
 	Vector2 uv = { -1.0f, -1.0f };
 	unsigned int buffer_index = 0;
@@ -785,11 +823,11 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 	{
 		for (int x = 0; x < viewport_width; x++)
 		{
-			// calculate useful stuff, grab data
+			// grab data
 			in_colour = *((Vector3*)(post_processing_buffer + buffer_index));
 
 			// actual post-processing code
-			in_colour *= 1.0f - (((uv.x * uv.x) + (uv.y * uv.y)) * 0.5f); // vignette
+			in_colour *= 1.0f - (((uv.x * uv.x) + (uv.y * uv.y)) * 0.3f); // vignette
 			in_colour = sampleLUT(lut_buffer, in_colour); // LUT
 
 			// set back to buffer
@@ -803,25 +841,26 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 	}
 
 	// write pixels back to the framebuffer
+	// this is kind of a horrible hack (in fact this entire function is). in a kinder world, we'd do this with a shader
+	// on the GPU, but the world is cruel, so i must use `glReadPixels` instead
 	glEnable(GL_TEXTURE_2D);
 	if (post_process_texture_id == -1)
 		glGenTextures(1, &post_process_texture_id);
 	glBindTexture(GL_TEXTURE_2D, post_process_texture_id);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, viewport_width, viewport_height, 0, GL_RGBA, GL_FLOAT, post_processing_buffer);
 	
+	// reset both matrices
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	// configure a very simple orthographic projection
 	glOrtho(-1, 1, -1, 1, -1, 1);
 	
-	glDisable(GL_CULL_FACE);
+	// set up and draw a single quad filling the frame
 	glPolygonMode(GL_FRONT, GL_FILL);
-	glPolygonMode(GL_BACK, GL_FILL);
 	float col[4] =
 	{
 		0.0f,
@@ -838,7 +877,7 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 
 	glDisable(GL_FOG);
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glBegin(GL_TRIANGLES);
+	glBegin(GL_QUADS);
 	{
 		// bottom left
 		glTexCoord2f(0.0f, 0.0f);
@@ -852,31 +891,21 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 		glTexCoord2f(1.0f, 1.0f);
 		glVertex3f(1.0, 1.0f, 0.5f);
 
-		// top right
-		glTexCoord2f(1.0f, 1.0f);
-		glVertex3f(1.0, 1.0f, 0.5f);
-
 		// top left
 		glTexCoord2f(0.0f, 1.0f);
 		glVertex3f(-1.0, 1.0f, 0.5f);
-
-		// bottom left
-		glTexCoord2f(0.0f, 0.0f);
-		glVertex3f(-1.0, -1.0f, 0.5f);
 	}
 	glEnd();
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_FOG);
-	glEnable(GL_CULL_FACE);
-
-	//glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
+	// rest in peace my friend: // glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
 }
 
 void SceneManager::updateLights()
 {
+	// update the openGL lights based on the light objects we have configured in the scene
 	for (int light_index = 0; light_index < 8; light_index++)
 	{
+		// skip and disable if it's disabled
 		GLenum light = GL_LIGHT0 + light_index;
 		if (!lights[light_index].enabled)
 		{
@@ -885,6 +914,7 @@ void SceneManager::updateLights()
 		}
 		glEnable(light);
 
+		// configure colour components
 		float tmp_col[4] = { 0.0f };
 		tmp_col[0] = lights[light_index].diffuse_colour.x;
 		tmp_col[1] = lights[light_index].diffuse_colour.y;
@@ -900,6 +930,7 @@ void SceneManager::updateLights()
 		tmp_col[2] = lights[light_index].ambient_colour.z;
 		glLightfv(light, GL_SPECULAR, tmp_col);
 
+		// configure position for direcitonal lights
 		if (lights[light_index].type == LightType::DIRECTIONAL)
 		{
 			tmp_col[0] = -lights[light_index].direction.x;
@@ -910,6 +941,7 @@ void SceneManager::updateLights()
 			continue;
 		}
 
+		// otherwise, configure position and direction for point lights
 		tmp_col[0] = lights[light_index].local_position.x;
 		tmp_col[1] = lights[light_index].local_position.y;
 		tmp_col[2] = lights[light_index].local_position.z;
@@ -917,6 +949,7 @@ void SceneManager::updateLights()
 		tmp_col[0] = lights[light_index].direction.x;
 		tmp_col[1] = lights[light_index].direction.y;
 		tmp_col[2] = lights[light_index].direction.z;
+		// configure falloff etc
 		glLightfv(light, GL_SPOT_DIRECTION, tmp_col);
 		glLightf(light, GL_SPOT_CUTOFF, lights[light_index].spot_angle);
 		glLightf(light, GL_SPOT_EXPONENT, lights[light_index].spot_exponent);
@@ -943,6 +976,7 @@ void SceneManager::togglePostprocess()
 
 void SceneManager::menuAction(int index)
 {
+	// handle a menu action
 	switch (index)
 	{
 	case 1:
@@ -960,6 +994,8 @@ void SceneManager::menuAction(int index)
 
 void SceneManager::setGameManager(GameManager* game)
 {
+	// assign the active game manager
 	game_manager = game;
+	// start up the game manager. start is allowed to be called more than once! see the `GameManager` class
 	game_manager->start(this);
 }

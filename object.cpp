@@ -16,6 +16,7 @@ void Object::addChild(Object* obj)
 
 void Object::destroy()
 {
+	// mark the object as being ready to die
 	is_waiting_for_death = true;
 }
 
@@ -23,14 +24,17 @@ void Object::removeFromParent()
 {
 	if (parent == nullptr) return;
 
+	// find ourselves in the parent's list of children
 	size_t index = 0;
 	for (index = 0; index < parent->children.getLength(); index++)
 	{
 		if (parent->children[index] == this) break;
 	}
 
+	// if we find ourself, remove us from the parent
 	if (index < parent->children.getLength())
 		parent->children.removeAt(index);
+	// if we didn't, something has gone horribly, horribly wrong
 	else
 		std::cout << "warning: unable to find child in parent's children list" << std::endl;
 	parent = nullptr;
@@ -38,6 +42,7 @@ void Object::removeFromParent()
 
 void Object::performPhysicsUpdate(float delta_time)
 {
+	// velocities are both in local units. i didn't want to write an entire 4x4 matrix library for this project
 	local_position += velocity_lin * delta_time;
 	local_rotation += velocity_ang * delta_time;
 }

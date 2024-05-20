@@ -9,12 +9,13 @@ struct FaceCornerInfo { uint32_t vert; uint32_t uv; uint32_t vn; };
 
 FaceCornerInfo splitFaceCorner(std::string str)
 {
+    // split a string describing the corner of a face into an easy-to-read struct (i.e. 'vert/texcoord/norm')
     FaceCornerInfo fci = { 0,0,0 };
     size_t first_break_ind = str.find('/');
     if (first_break_ind == std::string::npos) return fci;
     fci.vert = stoi(str.substr(0, first_break_ind)) - 1;
     size_t second_break_ind = str.find('/', first_break_ind + 1);
-    if (second_break_ind != first_break_ind + 1) // FIXME: -1 needed here too?
+    if (second_break_ind != first_break_ind + 1)
         fci.uv = stoi(str.substr(first_break_ind + 1, second_break_ind - first_break_ind)) - 1;
     fci.vn = stoi(str.substr(second_break_ind + 1, str.find('/', second_break_ind+1) - second_break_ind)) - 1;
 
@@ -33,6 +34,7 @@ uint32_t Mesh::trisCount()
 
 Mesh::Mesh(uint32_t verts_capacity, uint32_t tris_capacity)
 {
+    // allocate buffers for size. this constructor is actually never used. oh well
     num_tris = tris_capacity * 3;
     num_verts = verts_capacity;
 
@@ -41,6 +43,9 @@ Mesh::Mesh(uint32_t verts_capacity, uint32_t tris_capacity)
 
     uvs = new Vector2[num_tris];
     vertex_normals = new Vector3[num_tris];
+
+    bounds_min = Vector3{ 0,0,0 };
+    bounds_max = Vector3{ 0,0,0 };
     
     material = NULL;
 }
@@ -82,6 +87,7 @@ Mesh::Mesh(std::string path)
         }
     }
 
+    // allocate buffers
     num_tris = found_triangles * 3;
     num_verts = found_vertices;
 
@@ -90,6 +96,7 @@ Mesh::Mesh(std::string path)
     uvs = new Vector2[num_tris];
     vertex_normals = new Vector3[num_tris];
 
+    // allocate buffers for UVs and normals, only if they are present
     Vector2* uvs_temp = NULL;
     Vector3* vns_temp = NULL;
 
@@ -110,6 +117,7 @@ Mesh::Mesh(std::string path)
     Vector3 tmp3;
     Vector2 tmp2;
 
+    // iterate over lines
     while (!file.eof())
     {
         file >> type;
@@ -144,7 +152,7 @@ Mesh::Mesh(std::string path)
         file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
-    // iterate the file again, processing triangles now. TODO: support non-tri faces
+    // iterate the file again, processing triangles now. this code does not support non-triangle faces
     std::string v_inds;
     FaceCornerInfo fci;
     file.clear();
@@ -200,7 +208,7 @@ Mesh::Mesh(std::string path)
                 vertex_normals[f_ind] = vns_temp[fci.vn];
             f_ind++;
 
-            // recompute normal and fill in blanks
+            // recompute face normal and fill in blanks
             Vector3 v01 = vertices[triangles[f_ind - 2]] - vertices[triangles[f_ind - 3]];
             Vector3 v02 = vertices[triangles[f_ind - 1]] - vertices[triangles[f_ind - 3]];
             Vector3 normal = norm(v01 % v02);
@@ -217,6 +225,7 @@ Mesh::Mesh(std::string path)
     if (found_uvs > 0) delete[] uvs_temp;
     if (found_vnorms > 0) delete[] vns_temp;
 
+    // compute bounds for debugging later
     bounds_min = Vector3{ 0,0,0 };
     bounds_max = Vector3{ 0,0,0 };
     for (size_t i = 0; i < num_verts; i++)
