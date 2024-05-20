@@ -1,0 +1,36 @@
+﻿  game_manager.cpp
+  glut_callback_handlers.cpp
+  main.cpp
+  material.cpp
+  mesh.cpp
+S:\Repository of Things\Coding\C & C++\GP-Assessment-1\mesh.cpp(165,23): warning C4018: '>=': signed/unsigned mismatch
+  multi_game.cpp
+  museum_game.cpp
+  object.cpp
+  point_generator.cpp
+  scene_manager.cpp
+  space_game.cpp
+  texture.cpp
+S:\Repository of Things\Coding\C & C++\GP-Assessment-1\texture.cpp(103,20): warning C4018: '<': signed/unsigned mismatch
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutPassiveMotionFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutKeyboardUpFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutReshapeFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp___glutCreateWindowWithExit
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutMouseFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp___glutInitWithExit
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutAddMenuEntry
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutIgnoreKeyRepeat
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutAttachMenu
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutPostRedisplay
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutKeyboardFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp___glutCreateMenuWithExit
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutBitmapString
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutInitDisplayMode
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutTimerFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutSetMenu
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutDisplayFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutMainLoop
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutInitWindowPosition
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutMotionFunc
+scene_manager.obj : error LNK2001: unresolved external symbol __imp_glutInitWindowSize
+S:\Repository of Things\Coding\C & C++\GP-Assessment-1\x64\Release\GP-Assessment-1.exe : fatal error LNK1120: 21 unresolved externals
