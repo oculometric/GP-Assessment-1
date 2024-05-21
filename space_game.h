@@ -9,26 +9,36 @@
 class SpaceGame : public GameManager
 {
 private:
+	// most of these are self-explanatory
+
 	Vector3 camera_local_velocity;
 	MeshObject* ship = nullptr;
 	Object* camera_focus = nullptr;
 	CameraObject* camera = nullptr;
 	Object* scene_parent = nullptr;
 
+	// mesh objects placed into the overlay
+	
 	MeshObject* overlay_ship = nullptr;
 	MeshObject* spinning_ico_0 = nullptr;
 	MeshObject* spinning_ico_1 = nullptr;
 	MeshObject* spinning_ico_2 = nullptr;
 
+	// info for asteroid field
+	
 	Vector3* asteroid_points = nullptr;
 	size_t num_asteroid_points;
 	std::vector<MeshObject*> loaded_asteroids;
 	Mesh* asteroid_mesh = nullptr;
 
+	// text objects placed into the overlay
+	
 	TextObject* position_text = nullptr;
 	TextObject* velocity_text = nullptr;
 	TextObject* ship_rot_text = nullptr;
 	TextObject* cam_rot_text = nullptr;
+
+	// pointers to allocated objects
 
 	Material* particle_mat = nullptr;
 
@@ -36,6 +46,8 @@ private:
 	MeshObject* moon = nullptr;
 
 	Texture* skybox_texture = nullptr;
+
+	// spaceship acceleration
 
 	float acceleration = 0.0f;
 

@@ -14,6 +14,7 @@ using namespace std;
 
 void MuseumGame::start(SceneManager* manager)
 {
+	// set up the scene the way we want it
 	scene_manager = manager;
 
 	scene_manager->addObject(scene_parent);
@@ -25,8 +26,10 @@ void MuseumGame::start(SceneManager* manager)
 
 void MuseumGame::init()
 {
+	// create an empty object which will be the root of this scene
 	scene_parent = new Object();
 
+	// load textures
 	Texture* concrete_tex = new Texture();
 	Texture* wall_tex = new Texture();
 	Texture* earth_tex = new Texture();
@@ -36,11 +39,13 @@ void MuseumGame::init()
 	earth_tex->loadBMP("earth_1k_t.bmp");
 	checker_tex->loadBMP("checker_2k_t.bmp");
 
+	// load meshes
 	Mesh* concrete_mesh = new Mesh("museum_concrete.obj");
 	Mesh* wall_mesh = new Mesh("museum_white_walls.obj");
 	Mesh* earth_mesh = new Mesh("museum_earth.obj");
 	Mesh* checker_mesh = new Mesh("museum_checker.obj");
 
+	// configure materials
 	Material* concrete_mat = new Material(Vector3{ 1,1,1 }, 0.5f, concrete_tex);
 	Material* wall_mat = new Material(Vector3{ 1,1,1 }, 0.5f, wall_tex);
 	Material* earth_mat = new Material(Vector3{ 1,1,1 }, 0.5f, earth_tex);
@@ -50,16 +55,19 @@ void MuseumGame::init()
 	earth_mesh->material = earth_mat;
 	checker_mesh->material = checker_mat;
 
+	// configure mesh objects for the 4 parts of the museum
 	concrete_obj = new MeshObject(concrete_mesh);
 	wall_obj = new MeshObject(wall_mesh);
 	earth_obj = new MeshObject(earth_mesh);
 	checker_obj = new MeshObject(checker_mesh);
 
+	// add all of these to the scene parent
 	scene_parent->addChild(concrete_obj);
 	scene_parent->addChild(wall_obj);
 	scene_parent->addChild(earth_obj);
 	scene_parent->addChild(checker_obj);
 
+	// set up our camera
 	camera = new CameraObject(95.0f, 0.1f, 100.0f);
 	camera->local_rotation = Vector3{ -90, 0, 0 };
 
@@ -68,6 +76,7 @@ void MuseumGame::init()
 
 void MuseumGame::update(float delta_time)
 {
+	// calculate movement direction in local space (i.e. -z is forwards, etc)
 	Vector3 local_direction = Vector3
 	{
 		(float)(((control_key_states >> 3) & 1) - ((control_key_states >> 2) & 1)),
@@ -76,6 +85,7 @@ void MuseumGame::update(float delta_time)
 	};
 	local_direction = norm(local_direction) * 2.0f;
 
+	// construct rotation matrices from camera euler
 	Vector3 euler = scene_manager->getCamera()->local_rotation * ((float)M_PI / 180.0f);
 	Matrix3 rot_x =
 	{
@@ -95,6 +105,7 @@ void MuseumGame::update(float delta_time)
 		sin(-euler.z),  cos(-euler.z), 0,
 		0, 0, 1
 	};
+	// apply control direction as velocity
 	scene_manager->getCamera()->velocity_lin = ((rot_z * rot_x * rot_y) * local_direction);
 }
 
@@ -107,6 +118,7 @@ void MuseumGame::mouseMove(int delta_x, int delta_y, bool down)
 
 void MuseumGame::keyPressed(unsigned char key, bool down)
 {
+	// byte-pack the key states for movement
 	if (tolower(key) == 'w')
 	{
 		if (down)
@@ -153,6 +165,8 @@ void MuseumGame::keyPressed(unsigned char key, bool down)
 
 void MuseumGame::destroy()
 {
+	// remove our scene parent from the actual scene
 	scene_parent->removeFromParent();
+	// clear the scene camera
 	scene_manager->setCamera(nullptr);
 }

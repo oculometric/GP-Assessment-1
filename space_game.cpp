@@ -22,6 +22,7 @@ float randf()
 
 void SpaceGame::start(SceneManager* manager)
 {
+	// configure the scene how we want
 	scene_manager = manager;
 
 	scene_manager->addObject(scene_parent);
@@ -36,13 +37,16 @@ void SpaceGame::start(SceneManager* manager)
 	glFogfv(GL_FOG_COLOR, fog_colour);
 	glFogf(GL_FOG_DENSITY, 0.4f);
 
+	// configure the star
 	LightObject* star = scene_manager->getLight(0);
 	*star = LightObject(LightType::DIRECTIONAL, Vector3{ 3.0f, 2.8f, 2.6f });
 	star->direction = Vector3{ 0,0.2f,-1.0f };
 	star->ambient_colour = Vector3{ 0.05f, 0.05f, 0.2f };
 	
+	// assign skybox
 	scene_manager->skybox = skybox_texture;
 	
+	// add overlays
 	scene_manager->addOverlayObject(overlay_ship);
 	scene_manager->addOverlayObject(spinning_ico_0);
 	scene_manager->addOverlayObject(spinning_ico_1);
@@ -73,7 +77,7 @@ void SpaceGame::update(float delta_time)
 	Vector3 camera_global_velocity = (rot_z * rot_x * rot_y) * camera_local_velocity;
 	camera->local_position += camera_global_velocity * Vector3{1,-1,1} * delta_time;
 
-	// handle acceleration, in ship direction
+	// handle acceleration, in ship direction using rotation matrices
 	angle = ship->local_rotation * ((float)M_PI / 180.0f);
 	rot_x =
 	{
@@ -102,6 +106,7 @@ void SpaceGame::update(float delta_time)
 		scene_parent->addChild(part);
 	}
 
+	// update ship info text
 	position_text->text = std::string("SHIP POS: ") + std::to_string(ship->local_position.x) + " " + std::to_string(ship->local_position.y) + " " + std::to_string(ship->local_position.z);
 	velocity_text->text = std::string("SHIP VEL: ") + std::to_string(ship->velocity_lin.x) + " " + std::to_string(ship->velocity_lin.y) + " " + std::to_string(ship->velocity_lin.z);
 	ship_rot_text->text = std::string("SHIP ROT: ") + std::to_string(ship->local_rotation.x) + " " + std::to_string(ship->local_rotation.y) + " " + std::to_string(ship->local_rotation.z);
@@ -117,6 +122,7 @@ void SpaceGame::mouseMove(int delta_x, int delta_y, bool down)
 
 void SpaceGame::keyPressed(unsigned char key, bool down)
 {
+	// update acceleration based on keys
 	float sensitivity = 8.0f;
 	float up_down = down ? sensitivity : -sensitivity;
 	if (key == 'e' || key == 'E') acceleration += up_down;
@@ -130,28 +136,34 @@ void SpaceGame::keyPressed(unsigned char key, bool down)
 
 void SpaceGame::init()
 {
+	// create a new scene parent, all of our scene objects will be children of this
 	scene_parent = new Object();
 
+	// generate asteroid points distributed using Mitchell's Best Candidate algorithm
 	asteroid_points = new Vector3[NUM_ASTEROIDS];
 	generatePoints(NUM_ASTEROIDS, 2, Vector3{ -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS }, Vector3{ ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS }, asteroid_points);
 
+	// load and configure the spaceship
 	ship = new MeshObject(new Mesh("beholder_v4.obj"));
 	ship->name = "spaceship";
 	ship->geometry->material = new Material(Vector3{ 1.0f, 0.0f, 1.0f }, 0.7f, new Texture());
 	ship->geometry->material->albedo->loadBMP("beholder_v4_t.bmp");
 
+	// configure an empty object to be the camera focus (we rotate this instead of the camera to get an orbit cam)
 	camera_focus = new Object();
 	camera_focus->local_position = Vector3{ 0.0f, -4.4f, 2.6f };
 	camera_focus->local_rotation.x = 180.0f;
 	ship->addChild(camera_focus);
 	scene_parent->addChild(ship);
 
+	// configure camera, parented to the empty
 	camera = new CameraObject(90.0f, 0.1f, 3000.0f, 1.0f);
 	camera->local_position = Vector3{ 0,0,12 };
 	camera->local_rotation = Vector3{ 180.0f,180.0f,180.0f };
 	camera->far_clip = 3000.0f;
 	camera_focus->addChild(camera);
 
+	// configure the planet and moon system
 	planet = new MeshObject(new Mesh("planet.obj"));
 	planet->geometry->material = new Material(Vector3{ 1,0,1 }, 0.1f, new Texture());
 	planet->geometry->material->albedo->loadBMP("moon_and_planet_t.bmp");
@@ -167,10 +179,12 @@ void SpaceGame::init()
 	moon->local_scale = Vector3{ 1, 1, 1 };
 	planet->addChild(moon);
 
+	// load and set up the skybox
 	skybox_texture = new Texture();
 	skybox_texture->loadBMP("nasa_goddard_gaia_dr2_deep_star_map.bmp");
-	asteroid_mesh = new Mesh("asteroid_0.obj");
 
+	// configure objects for the asteroid field
+	asteroid_mesh = new Mesh("asteroid_0.obj");
 	for (int a = 0; a < NUM_ASTEROIDS; a++)
 	{
 		MeshObject* new_asteroid = new MeshObject(asteroid_mesh, asteroid_points[a] * 10);
@@ -184,9 +198,11 @@ void SpaceGame::init()
 		new_asteroid->velocity_lin = Vector3{ randf() * 0.2f, randf() * 0.2f, randf() * 0.2f };
 	}
 
+	// configure particle material for the rocket booster
 	particle_mat = new Material({ 1, 0.5f, 0 }, 0.1f);
 	particle_mat->is_unlit = true;
 
+	// configure overlay objects
 	overlay_ship = new MeshObject(ship->geometry, Vector3{ 0.8f, 0.8f, 0.0f }, Vector3{ 90.0f, 0.0f, 0.0f }, Vector3{ 0.03f, 0.03f, 0.03f });
 	spinning_ico_0 = new MeshObject(new Mesh("icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	spinning_ico_1 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.6f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
@@ -202,6 +218,7 @@ void SpaceGame::init()
 
 void SpaceGame::destroy()
 {
+	// remove all overlay objects
 	overlay_ship->removeFromParent();
 	spinning_ico_0->removeFromParent();
 	spinning_ico_1->removeFromParent();
@@ -211,6 +228,7 @@ void SpaceGame::destroy()
 	ship_rot_text->removeFromParent();
 	cam_rot_text->removeFromParent();
 
+	// clear the camera and remove the scene parent (and thus the entire scene hierarchy)
 	scene_manager->setCamera(nullptr);
 
 	scene_parent->removeFromParent();

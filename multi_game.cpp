@@ -4,14 +4,12 @@
 GameManager* games[NUM_GAMES] = { nullptr };
 size_t current_game = 0;
 
-// assign a game into the array
 void setGame(size_t index, GameManager* game)
 {
 	if (index >= NUM_GAMES) return;
 	games[index] = game;
 }
 
-// advance to the next game manager. used for switching scenes
 GameManager* nextGame()
 {
 	while (true)

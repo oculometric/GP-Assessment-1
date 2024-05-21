@@ -8,6 +8,9 @@ class MuseumGame : public GameManager
 private:
 	// stores key states in the format 0b00qedasw
 	unsigned char control_key_states = 0;
+
+	// pointers for allocated objects
+
 	LightObject* player_light = nullptr;
 	Object* scene_parent = nullptr;
 

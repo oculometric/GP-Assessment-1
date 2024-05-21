@@ -5,6 +5,7 @@
 #include "vector2.h"
 #include "material.h"
 
+// class for storing mesh data
 class Mesh
 {
 public:

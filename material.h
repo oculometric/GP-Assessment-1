@@ -3,12 +3,14 @@
 #include "texture.h"
 #include "vector3.h"
 
+// enum describing available material render modes
 enum MaterialMode
 {
 	SOLID,
-	ALBEDO,
+	ALBEDO
 };
 
+// class storing material configuration
 class Material
 {
 private:

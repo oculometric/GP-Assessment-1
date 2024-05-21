@@ -5,6 +5,7 @@
 // forward declaration
 class SceneManager;
 
+// namespace for static functions which will call back into the active scene manager
 namespace glut_callback_handlers
 {
 	void init(SceneManager* s);
