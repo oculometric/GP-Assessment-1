@@ -144,10 +144,10 @@ void SpaceGame::init()
 	generatePoints(NUM_ASTEROIDS, 2, Vector3{ -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS, -ASTEROID_MAP_RADIUS }, Vector3{ ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS,ASTEROID_MAP_RADIUS }, asteroid_points);
 
 	// load and configure the spaceship
-	ship = new MeshObject(new Mesh("beholder_v4.obj"));
+	ship = new MeshObject(new Mesh("models/beholder_v4.obj"));
 	ship->name = "spaceship";
 	ship->geometry->material = new Material(Vector3{ 1.0f, 0.0f, 1.0f }, 0.7f, new Texture());
-	ship->geometry->material->albedo->loadBMP("beholder_v4_t.bmp");
+	ship->geometry->material->albedo->loadBMP("textures/beholder_v4_t.bmp");
 
 	// configure an empty object to be the camera focus (we rotate this instead of the camera to get an orbit cam)
 	camera_focus = new Object();
@@ -164,15 +164,15 @@ void SpaceGame::init()
 	camera_focus->addChild(camera);
 
 	// configure the planet and moon system
-	planet = new MeshObject(new Mesh("planet.obj"));
+	planet = new MeshObject(new Mesh("models/planet.obj"));
 	planet->geometry->material = new Material(Vector3{ 1,0,1 }, 0.1f, new Texture());
-	planet->geometry->material->albedo->loadBMP("moon_and_planet_t.bmp");
+	planet->geometry->material->albedo->loadBMP("textures/moon_and_planet_t.bmp");
 	planet->local_position = Vector3{ 1200, 200, 400 };
 	planet->velocity_ang.z = 2.0f;
 	planet->local_scale = Vector3{ 100, 100, 100 };
 	scene_parent->addChild(planet);
 
-	moon = new MeshObject(new Mesh("moon.obj"));
+	moon = new MeshObject(new Mesh("models/moon.obj"));
 	moon->geometry->material = planet->geometry->material;
 	moon->local_position = Vector3{ 15, 0, 0 };
 	moon->velocity_ang.z = 0.2f;
@@ -181,10 +181,10 @@ void SpaceGame::init()
 
 	// load and set up the skybox
 	skybox_texture = new Texture();
-	skybox_texture->loadBMP("nasa_goddard_gaia_dr2_deep_star_map.bmp");
+	skybox_texture->loadBMP("textures/nasa_goddard_gaia_dr2_deep_star_map.bmp");
 
 	// configure objects for the asteroid field
-	asteroid_mesh = new Mesh("asteroid_0.obj");
+	asteroid_mesh = new Mesh("models/asteroid_0.obj");
 	for (int a = 0; a < NUM_ASTEROIDS; a++)
 	{
 		MeshObject* new_asteroid = new MeshObject(asteroid_mesh, asteroid_points[a] * 10);
@@ -204,7 +204,7 @@ void SpaceGame::init()
 
 	// configure overlay objects
 	overlay_ship = new MeshObject(ship->geometry, Vector3{ 0.8f, 0.8f, 0.0f }, Vector3{ 90.0f, 0.0f, 0.0f }, Vector3{ 0.03f, 0.03f, 0.03f });
-	spinning_ico_0 = new MeshObject(new Mesh("icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
+	spinning_ico_0 = new MeshObject(new Mesh("models/icosahedron.obj"), Vector3{ -0.8f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	spinning_ico_1 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.6f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	spinning_ico_2 = new MeshObject(spinning_ico_0->geometry, Vector3{ -0.4f, -0.8f, 0.0f }, Vector3{ 0,0,0 }, Vector3{ 0.1f, 0.1f, 0.1f });
 	position_text = new TextObject(Vector2{ 0.0f, -0.75f }, std::string("SHIP POS: "), Vector3{ 242.0f / 255.0f, 161.0f / 255.0f, 26.0f / 255.0f }, GLUT_BITMAP_9_BY_15);

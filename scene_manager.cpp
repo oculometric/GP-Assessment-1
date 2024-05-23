@@ -90,7 +90,7 @@ void SceneManager::initialise(int argc, char* argv[], unsigned int x, unsigned i
 	// load LUT, and rearrange it in memory to be faster to access later
 	Vector3* lut_input_buffer;
 	lut_buffer = new Vector3[512 * 512];
-	Texture::loadBMPRaw("lut.bmp", lut_input_buffer);
+	Texture::loadBMPRaw("textures/lut.bmp", lut_input_buffer);
 	for (int x = 0; x < 64; x++)
 	{
 		for (int y = 0; y < 64; y++)

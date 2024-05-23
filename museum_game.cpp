@@ -39,20 +39,20 @@ void MuseumGame::init()
 	Texture* checker_tex = new Texture();
 	Texture* palms_tex = new Texture();
 	Texture* pipes_tex = new Texture();
-	concrete_tex->loadBMP("concrete_1k_t.bmp");
-	wall_tex->loadBMP("wall_1k_t.bmp");
-	earth_tex->loadBMP("earth_1k_t.bmp");
-	checker_tex->loadBMP("checker_2k_t.bmp");
-	palms_tex->loadBMP("palm_frond_variegated_t.bmp");
-	pipes_tex->loadBMP("shiny_pipes_t.bmp");
+	concrete_tex->loadBMP("textures/concrete_1k_t.bmp");
+	wall_tex->loadBMP("textures/wall_1k_t.bmp");
+	earth_tex->loadBMP("textures/earth_1k_t.bmp");
+	checker_tex->loadBMP("textures/checker_2k_t.bmp");
+	palms_tex->loadBMP("textures/palm_frond_variegated_t.bmp");
+	pipes_tex->loadBMP("textures/shiny_pipes_t.bmp");
 
 	// load meshes
-	Mesh* concrete_mesh = new Mesh("museum_concrete.obj");
-	Mesh* wall_mesh = new Mesh("museum_white_walls.obj");
-	Mesh* earth_mesh = new Mesh("museum_earth.obj");
-	Mesh* checker_mesh = new Mesh("museum_checker.obj");
-	Mesh* palms_mesh = new Mesh("museum_palms.obj");
-	Mesh* pipes_mesh = new Mesh("museum_pipes.obj");
+	Mesh* concrete_mesh = new Mesh("models/museum_concrete.obj");
+	Mesh* wall_mesh = new Mesh("models/museum_white_walls.obj");
+	Mesh* earth_mesh = new Mesh("models/museum_earth.obj");
+	Mesh* checker_mesh = new Mesh("models/museum_checker.obj");
+	Mesh* palms_mesh = new Mesh("models/museum_palms.obj");
+	Mesh* pipes_mesh = new Mesh("models/museum_pipes.obj");
 
 	// configure materials
 	Material* concrete_mat = new Material(Vector3{ 1,1,1 }, 0.5f, concrete_tex);
