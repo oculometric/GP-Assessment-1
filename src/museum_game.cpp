@@ -1,14 +1,14 @@
-#include "museum_game.h"
+#include "../include/museum_game.h"
 
 #include <iostream>
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include "texture.h"
-#include "object.h"
-#include "material.h"
-#include "scene_manager.h"
-#include "matrix3.h"
+#include "../include/texture.h"
+#include "../include/object.h"
+#include "../include/material.h"
+#include "../include/scene_manager.h"
+#include "../include/matrix3.h"
 
 using namespace std;
 

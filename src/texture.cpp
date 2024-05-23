@@ -1,6 +1,6 @@
-#include "texture.h"
-#include "iostream"
-#include "fstream"
+#include "../include/texture.h"
+#include <iostream>
+#include <fstream>
 
 #include <Windows.h>
 #include <gl/GL.h>

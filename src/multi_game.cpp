@@ -1,4 +1,4 @@
-#include "multi_game.h"
+#include "../include/multi_game.h"
 
 // static array of game managers for different scenes
 GameManager* games[NUM_GAMES] = { nullptr };

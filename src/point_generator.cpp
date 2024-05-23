@@ -1,4 +1,4 @@
-#include "point_generator.h"
+#include "../include/point_generator.h"
 
 #include <set>
 

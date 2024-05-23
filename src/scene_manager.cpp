@@ -1,14 +1,14 @@
-#include "scene_manager.h"
+#include "../include/scene_manager.h"
 
 #include <Windows.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
-#include "GL/freeglut.h"
-#include "glut_callback_handlers.h"
-#include "matrix3.h"
+#include "../GL/freeglut.h"
+#include "../include/glut_callback_handlers.h"
+#include "../include/matrix3.h"
 #include <queue>
 #include <string>
-#include "multi_game.h"
+#include "../include/multi_game.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>

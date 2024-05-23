@@ -1,5 +1,5 @@
-#include "game_manager.h"
-#include "scene_manager.h"
+#include "../include/game_manager.h"
+#include "../include/scene_manager.h"
 
 void GameManager::init() { }
 

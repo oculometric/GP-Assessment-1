@@ -1,4 +1,4 @@
-#include "material.h"
+#include "../include/material.h"
 
 Material::Material(Vector3 solid_colour, float reflectance, Texture* albedo_texture)
 {

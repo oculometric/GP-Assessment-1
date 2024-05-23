@@ -77,38 +77,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="game_manager.cpp" />
-    <ClCompile Include="glut_callback_handlers.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="material.cpp" />
-    <ClCompile Include="mesh.cpp" />
-    <ClCompile Include="multi_game.cpp" />
-    <ClCompile Include="museum_game.cpp" />
-    <ClCompile Include="object.cpp" />
-    <ClCompile Include="point_generator.cpp" />
-    <ClCompile Include="scene_manager.cpp" />
-    <ClCompile Include="space_game.cpp" />
-    <ClCompile Include="texture.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="game_manager.h" />
-    <ClInclude Include="glut_callback_handlers.h" />
-    <ClInclude Include="linked_list.h" />
-    <ClInclude Include="material.h" />
-    <ClInclude Include="matrix3.h" />
-    <ClInclude Include="mesh.h" />
-    <ClInclude Include="multi_game.h" />
-    <ClInclude Include="museum_game.h" />
-    <ClInclude Include="object.h" />
-    <ClInclude Include="point_generator.h" />
-    <ClInclude Include="scene_manager.h" />
-    <ClInclude Include="space_game.h" />
-    <ClInclude Include="texture.h" />
-    <ClInclude Include="vector2.h" />
-    <ClInclude Include="vector3.h" />
+    <ClInclude Include="include\game_manager.h" />
+    <ClInclude Include="include\glut_callback_handlers.h" />
+    <ClInclude Include="include\linked_list.h" />
+    <ClInclude Include="include\material.h" />
+    <ClInclude Include="include\matrix3.h" />
+    <ClInclude Include="include\mesh.h" />
+    <ClInclude Include="include\multi_game.h" />
+    <ClInclude Include="include\museum_game.h" />
+    <ClInclude Include="include\object.h" />
+    <ClInclude Include="include\point_generator.h" />
+    <ClInclude Include="include\scene_manager.h" />
+    <ClInclude Include="include\space_game.h" />
+    <ClInclude Include="include\texture.h" />
+    <ClInclude Include="include\vector2.h" />
+    <ClInclude Include="include\vector3.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="freeglut.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\game_manager.cpp" />
+    <ClCompile Include="src\glut_callback_handlers.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\material.cpp" />
+    <ClCompile Include="src\mesh.cpp" />
+    <ClCompile Include="src\multi_game.cpp" />
+    <ClCompile Include="src\museum_game.cpp" />
+    <ClCompile Include="src\object.cpp" />
+    <ClCompile Include="src\point_generator.cpp" />
+    <ClCompile Include="src\scene_manager.cpp" />
+    <ClCompile Include="src\space_game.cpp" />
+    <ClCompile Include="src\texture.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

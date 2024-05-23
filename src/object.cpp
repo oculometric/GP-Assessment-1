@@ -1,4 +1,4 @@
-#include "object.h"
+#include "../include/object.h"
 
 void Object::addChild(Object* obj)
 {

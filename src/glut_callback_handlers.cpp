@@ -1,7 +1,7 @@
-#include "glut_callback_handlers.h"
+#include "../include/glut_callback_handlers.h"
 
-#include "scene_manager.h"
-#include "space_game.h"
+#include "../include/scene_manager.h"
+#include "../include/space_game.h"
 
 namespace glut_callback_handlers
 {

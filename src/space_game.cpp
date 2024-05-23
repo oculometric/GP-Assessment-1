@@ -1,11 +1,11 @@
-#include "space_game.h"
-#include "scene_manager.h"
-#include "object.h"
-#include "matrix3.h"
-#include "GL/freeglut.h"
-#include "GL/glut.h"
-#include "point_generator.h"
-#include "museum_game.h"
+#include "../include/space_game.h"
+#include "../include/scene_manager.h"
+#include "../include/object.h"
+#include "../include/matrix3.h"
+#include "../GL/freeglut.h"
+#include "../GL/glut.h"
+#include "../include/point_generator.h"
+#include "../include/museum_game.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>

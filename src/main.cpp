@@ -1,7 +1,7 @@
-#include "scene_manager.h"
-#include "space_game.h"
-#include "museum_game.h"
-#include "multi_game.h"
+#include "../include/scene_manager.h"
+#include "../include/space_game.h"
+#include "../include/museum_game.h"
+#include "../include/multi_game.h"
 
 int main(int argc, char* argv[])
 {
