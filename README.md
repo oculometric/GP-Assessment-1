@@ -26,23 +26,41 @@ All other textures I created using blender, GIMP and Krita.
 
 ## Screenshots
 ![image 0](image_0.png)
+
 'Orbiting a planet' scene.
+
 ![image 1](image_1.png)
+
 The planet is visible through the asteroid field.
+
 ![image 2](image_2.png)
+
 Another view of the spaceship. Notice the green overlay objects (animated), and text detailing the position, rotation, and velocity of the spaceship.
+
 ![image 3](image_3.png)
+
 Outside the asteroid field, and the moon is visible orbiting the planet.
+
 ![image 4](image_4.png)
+
 From the corner of 'the museum' scene. It isn't much of a museum, I ran out of time for adding more details.
+
 ![image 5](image_5.png)
+
 In the museum scene, a second light is added, a blue light centered on the player.
+
 ![image 6](image_6.png)
+
 There is an option to toggle on debug mode.
+
 ![image 7](image_7.png)
+
 Debug mode in 'Orbiting a planet', with the moon visible in the top right.
+
 ![image 8](image_8.png)
+
 The menu can be brought up using right-click.
+
 
 ## Controls
 In 'Orbiting a planet':
