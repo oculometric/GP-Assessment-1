@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 {
 	// init the scene manager (configures GLUT and openGL)
 	SceneManager s;
-	s.initialise(argc, argv, 600, 600);
+	s.initialise(argc, argv, 640, 480);
 
 	// init the two game managers for the different scenes (loads their resources)
 	SpaceGame* sg = new SpaceGame();
