@@ -1,12 +1,12 @@
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\game_manager.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\game_manager.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\glut_callback_handlers.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\glut_callback_handlers.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\main.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\main.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\material.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\material.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\mesh.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\mesh.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\multi_game.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\multi_game.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\museum_game.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\museum_game.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\object.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\object.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\point_generator.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\point_generator.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\scene_manager.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\scene_manager.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\space_game.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\space_game.obj
-S:\Repository of Things\Coding\C & C++\GP-Assessment-1\texture.cpp;S:\Repository of Things\Coding\C & C++\GP-Assessment-1\Release\texture.obj
+C:\Users\maste\source\repos\GP-Assessment-1\game_manager.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\game_manager.obj
+C:\Users\maste\source\repos\GP-Assessment-1\glut_callback_handlers.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\glut_callback_handlers.obj
+C:\Users\maste\source\repos\GP-Assessment-1\main.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\main.obj
+C:\Users\maste\source\repos\GP-Assessment-1\material.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\material.obj
+C:\Users\maste\source\repos\GP-Assessment-1\mesh.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\mesh.obj
+C:\Users\maste\source\repos\GP-Assessment-1\multi_game.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\multi_game.obj
+C:\Users\maste\source\repos\GP-Assessment-1\museum_game.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\museum_game.obj
+C:\Users\maste\source\repos\GP-Assessment-1\object.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\object.obj
+C:\Users\maste\source\repos\GP-Assessment-1\point_generator.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\point_generator.obj
+C:\Users\maste\source\repos\GP-Assessment-1\scene_manager.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\scene_manager.obj
+C:\Users\maste\source\repos\GP-Assessment-1\space_game.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\space_game.obj
+C:\Users\maste\source\repos\GP-Assessment-1\texture.cpp;C:\Users\maste\source\repos\GP-Assessment-1\Release\texture.obj

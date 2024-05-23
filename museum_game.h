@@ -18,6 +18,8 @@ private:
 	MeshObject* wall_obj = nullptr;
 	MeshObject* earth_obj = nullptr;
 	MeshObject* checker_obj = nullptr;
+	MeshObject* palms_obj = nullptr;
+	MeshObject* pipes_obj = nullptr;
 
 	CameraObject* camera = nullptr;
 public:

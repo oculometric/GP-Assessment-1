@@ -83,6 +83,9 @@ void SceneManager::initialise(int argc, char* argv[], unsigned int x, unsigned i
 	glDisable(GL_COLOR_MATERIAL);
 	// enable normalisation, since we're scaling objects
 	glEnable(GL_NORMALIZE);
+	// enable blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// load LUT, and rearrange it in memory to be faster to access later
 	Vector3* lut_input_buffer;
@@ -850,7 +853,8 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, viewport_width, viewport_height, 0, GL_RGBA, GL_FLOAT, post_processing_buffer);
-	
+	glDisable(GL_BLEND);
+
 	// reset both matrices
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -896,6 +900,8 @@ void SceneManager::performPostProcessing(CameraObject* camera)
 		glVertex3f(-1.0, 1.0f, 0.5f);
 	}
 	glEnd();
+
+	glEnable(GL_BLEND);
 
 	// rest in peace my friend: // glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, post_processing_buffer);
 }
@@ -945,10 +951,12 @@ void SceneManager::updateLights()
 		tmp_col[0] = lights[light_index].local_position.x;
 		tmp_col[1] = lights[light_index].local_position.y;
 		tmp_col[2] = lights[light_index].local_position.z;
+		tmp_col[3] = 1.0f;
 		glLightfv(light, GL_POSITION, tmp_col);
 		tmp_col[0] = lights[light_index].direction.x;
 		tmp_col[1] = lights[light_index].direction.y;
 		tmp_col[2] = lights[light_index].direction.z;
+		tmp_col[3] = 1.0f;
 		// configure falloff etc
 		glLightfv(light, GL_SPOT_DIRECTION, tmp_col);
 		glLightf(light, GL_SPOT_CUTOFF, lights[light_index].spot_angle);
